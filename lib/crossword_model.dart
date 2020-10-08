@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 /// Wraps the main Crossword, providing loading spinner and handling errors.
 class CrosswordLoader extends StatelessWidget {
@@ -26,14 +25,11 @@ class StaticCrossword extends StatelessWidget {
   final List<Clue> acrossClues;
   final List<Clue> downClues;
 
-  StaticCrossword({this.acrossClues, this.downClues, this.grid}) {
-    // new Timer.periodic(Duration(seconds: 5), (Timer t) => )
-  }
+  StaticCrossword({this.acrossClues, this.downClues, this.grid}) {}
 
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // grid,
         StreamBuilder(
           stream: streamGrids(),
           builder: (context, snapshot) {
@@ -54,16 +50,16 @@ class StaticCrossword extends StatelessWidget {
     );
   }
 
-// {"grid":{"width":15,"height":15,"cells":[]},"clues":{"across":[{"number":1,"surface":"Mountain ledge offering place of refreshment for one (7)","length":7,"answer":"SCAFELL","position":{"row":0,"column":0},"span_info":{"linear_span":[{"row":0,"column":0},{"row":0,"column":1},{"row":0,"column":2},{"row":0,"column":3},{"row":0,"column":4},{"row":0,"column":5},{"row":0,"column":6}],"full_span":[{"row":0,"column":0},{"row":0,"column":1},{"row":0,"column":2},{"row":0,"column":3},{"row":0,"column":4},{"row":0,"column":5},{"row":0,"column":6}],"overflow_clues":[],"underflow_clues":[]}}
   factory StaticCrossword.fromJSON(Map<String, dynamic> json) {
     final allClues = json["clues"];
     final aClues = allClues["across"];
     final dClues = allClues["down"];
+
+    parseClues(clues) =>
+        clues.map<Clue>((jsonClue) => Clue.fromJSON(jsonClue)).toList();
     return StaticCrossword(
-        acrossClues:
-            aClues.map<Clue>((jsonClue) => Clue.fromJSON(jsonClue)).toList(),
-        downClues:
-            dClues.map<Clue>((jsonClue) => Clue.fromJSON(jsonClue)).toList(),
+        acrossClues: parseClues(aClues),
+        downClues: parseClues(dClues),
         grid: Grid.fromJSON(json["grid"]));
   }
 }
@@ -73,26 +69,11 @@ Future<StaticCrossword> fetchCrosswordSkeleton() async {
   final response = await http.get(addr);
 
   if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON.
     return StaticCrossword.fromJSON(json.decode(response.body));
   } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
     throw Exception('Failed to load album');
   }
 }
-
-// class Row {
-//   final List<CellModel> cells;
-
-//   Row({this.cells});
-
-//   factory Row.fromJSON(List<dynamic> jsonIn) {
-//     final parsed = jsonIn.map((e) => CellModel.fromJSON(e)).toList();
-//     return Row(cells: parsed);
-//   }
-// }
 
 Stream<Grid> streamGrids() async* {
   yield* Stream.periodic(Duration(seconds: 5), (_) {
@@ -111,8 +92,9 @@ class Grid extends StatelessWidget {
 
   Widget build(BuildContext context) {
     final builder = (BuildContext context, i) {
-      final row = i ~/ 15;
-      final col = i % 15;
+      final row = i ~/ width;
+      final col = i % width;
+      // This is horrible that this is happening here - fix it.
       rows[row][col].rowIndex = row;
       rows[row][col].colIndex = col;
       return rows[row][col];
@@ -296,15 +278,10 @@ Future<Grid> fetchCrossword() async {
   final addr =
       'https://csolve.herokuapp.com/solve/guardian-cryptic/28089/the-everymen/get';
   final response = await http.get(addr);
-  // print(response.body);
 
   if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON.
     return Grid.fromJSON(json.decode(response.body));
   } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
     throw Exception('Failed to load album');
   }
 }
