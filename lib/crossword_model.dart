@@ -1,8 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+const CROSSWORD = 'guardian-cryptic/28259';
+
+// TODO new function:
+// Highlight active square
+// scroll to currently selected clue
+// Display current clue across top?
+// Prettify answer numbers
+// Fade clue to grey when complete
+// When user first clicks cell, the cursor can be positioned at the end, which breaks the update.
 
 /// Wraps the main Crossword, providing loading spinner and handling errors.
 class CrosswordLoader extends StatelessWidget {
@@ -20,35 +31,15 @@ class CrosswordLoader extends StatelessWidget {
   }
 }
 
-class StaticCrossword extends StatelessWidget {
+// I'm not totally clear if having this as Stateful to handle disposal of the
+// StreamController is correct.
+class StaticCrossword extends StatefulWidget {
   final Grid grid;
   final List<Clue> acrossClues;
   final List<Clue> downClues;
 
-  StaticCrossword({this.acrossClues, this.downClues, this.grid}) {}
-
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        StreamBuilder(
-          stream: streamGrids(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return snapshot.data;
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return CircularProgressIndicator();
-          },
-        ),
-        ListView(
-          padding: EdgeInsets.all(5),
-          shrinkWrap: true,
-          children: acrossClues,
-        ),
-      ],
-    );
-  }
+  StaticCrossword({Key key, this.acrossClues, this.downClues, this.grid})
+      : super(key: key);
 
   factory StaticCrossword.fromJSON(Map<String, dynamic> json) {
     final allClues = json["clues"];
@@ -62,10 +53,78 @@ class StaticCrossword extends StatelessWidget {
         downClues: parseClues(dClues),
         grid: Grid.fromJSON(json["grid"]));
   }
+
+  @override
+  State<StatefulWidget> createState() {
+    return StaticCrosswordState();
+  }
+}
+
+class StaticCrosswordState extends State<StaticCrossword> {
+  final StreamController<GridUpdate> streamController = new StreamController();
+
+  @override
+  void initState() {
+    super.initState();
+    streamController.stream.listen(sendValueUpdate);
+  }
+
+  static String charToJson(int rowIndex, int colIndex, String charToSet) {
+    return charToSet.isEmpty
+        ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
+        : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
+  }
+
+  static void sendValueUpdate(GridUpdate update) {
+    final addr =
+        'https://csolve.herokuapp.com/solve/$CROSSWORD/the-everymen/set_cell';
+    final body = charToJson(update.row, update.column, update.value);
+    http.post(
+      addr,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: body,
+    );
+  }
+
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        StreamBuilder(
+          stream: streamGrids(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return _buildGridWidget(snapshot.data);
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+            return CircularProgressIndicator();
+          },
+        ),
+        Flexible(
+          child: ListView(
+            padding: EdgeInsets.all(5),
+            children: widget.acrossClues + widget.downClues,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGridWidget(Grid grid) {
+    return LetterGrid(grid.width, grid.height, grid.rows, streamController);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    streamController.close();
+  }
 }
 
 Future<StaticCrossword> fetchCrosswordSkeleton() async {
-  final addr = 'https://csolve.herokuapp.com/crossword/guardian-cryptic/28089';
+  final addr = 'https://csolve.herokuapp.com/crossword/$CROSSWORD';
   final response = await http.get(addr);
 
   if (response.statusCode == 200) {
@@ -83,33 +142,12 @@ Stream<Grid> streamGrids() async* {
   );
 }
 
-class Grid extends StatelessWidget {
+class Grid {
   final int width;
   final int height;
   final List<List<CellModel>> rows;
 
   Grid({this.width, this.height, this.rows});
-
-  Widget build(BuildContext context) {
-    final builder = (BuildContext context, i) {
-      final row = i ~/ width;
-      final col = i % width;
-      // This is horrible that this is happening here - fix it.
-      rows[row][col].rowIndex = row;
-      rows[row][col].colIndex = col;
-      return rows[row][col];
-    };
-
-    return Container(
-        color: Colors.white30,
-        child: GridView.builder(
-          shrinkWrap: true,
-          itemCount: width * height,
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: width),
-          itemBuilder: builder,
-        ));
-  }
 
   static List<CellModel> _rowFromJSON(dynamic jsonIn) {
     // debugPrint("called _rowFromJSON");
@@ -153,94 +191,11 @@ class Value {
   }
 }
 
-class CellModel extends StatelessWidget {
+class CellModel {
   final int number;
-  // final bool open;
   final Value value;
 
-  // TODO: this is set at build time - yuk.
-  int rowIndex;
-  int colIndex;
-
   CellModel({this.number, this.value});
-
-  String charToJson(String charToSet) {
-    return charToSet.isEmpty
-        ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
-        : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
-  }
-
-  void sendValueUpdate(String charToSet) {
-    final addr =
-        'https://csolve.herokuapp.com/solve/guardian-cryptic/28089/the-everymen/set_cell';
-    final body = charToJson(charToSet);
-    http.post(
-      addr,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: body,
-    );
-  }
-
-  Widget build(BuildContext context) {
-    var controller = TextEditingController(
-      text: value.filled ? value.value : null,
-    );
-    controller.selection = TextSelection(baseOffset: 0, extentOffset: 0);
-
-    // onChanged we want to :
-    // get the latest value, and update the box so that it's only one upper case
-    // letter
-    // Send the update to the server with the single letter value.
-    //
-    // Using onChanged rather than a controller listener ensures we are only
-    // notified about user changes here, and not our own network updates.
-    final userChanged = (String value) {
-      debugPrint("DEBUG PRINT: Controller.text is");
-      debugPrint("${controller.text}");
-      controller.value = controller.value.copyWith(
-        // any nicer null syntax i can use here?
-        text: controller.text.isEmpty ? null : controller.text[0].toUpperCase(),
-        selection: TextSelection(baseOffset: 0, extentOffset: 0),
-      );
-      sendValueUpdate(controller.text);
-    };
-
-    var _fillColour = value.open ? Colors.white : Colors.black;
-
-    // Hmm, this doesn't do anything, but I can't recall what I meant to do here.
-    final _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
-        _fillColour = Colors.blue;
-      }
-    });
-
-    if (value.open) {
-      final t = TextField(
-        controller: controller,
-        onChanged: userChanged,
-        focusNode: _focusNode,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
-      );
-
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-          color: _fillColour,
-        ),
-        child: Center(child: t),
-      );
-    } else {
-      return Container(
-          decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        color: Colors.black,
-      ));
-    }
-  }
 
   factory CellModel.fromJSON(json) {
     return CellModel(
@@ -275,8 +230,7 @@ class Clue extends StatelessWidget {
 }
 
 Future<Grid> fetchCrossword() async {
-  final addr =
-      'https://csolve.herokuapp.com/solve/guardian-cryptic/28089/the-everymen/get';
+  final addr = 'https://csolve.herokuapp.com/solve/$CROSSWORD/the-everymen/get';
   final response = await http.get(addr);
 
   if (response.statusCode == 200) {
