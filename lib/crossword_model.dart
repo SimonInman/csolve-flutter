@@ -8,18 +8,56 @@ import 'package:http/http.dart' as http;
 const CROSSWORD = 'guardian-cryptic/28259';
 
 // TODO new function:
-// Highlight active square
 // scroll to currently selected clue
 // Display current clue across top?
 // Prettify answer numbers
 // Fade clue to grey when complete
 // When user first clicks cell, the cursor can be positioned at the end, which breaks the update.
 
+class CrosswordScreen extends StatelessWidget {
+  final String crosswordPath;
+  final String crosswordId;
+
+  const CrosswordScreen({
+    Key key,
+    @required this.crosswordPath,
+    @required this.crosswordId,
+  })  : assert(crosswordId != null),
+        assert(crosswordPath != null),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('here is a second title?'),
+      ),
+      body: Center(
+          child: CrosswordLoader(
+        crosswordId: crosswordId,
+        crosswordPath: crosswordPath,
+      )),
+    );
+  }
+}
+
 /// Wraps the main Crossword, providing loading spinner and handling errors.
 class CrosswordLoader extends StatelessWidget {
+  final String crosswordPath;
+  final String crosswordId;
+
+  const CrosswordLoader(
+      {Key key, @required this.crosswordPath, @required this.crosswordId})
+      : assert(crosswordId != null),
+        assert(crosswordPath != null),
+        super(key: key);
+
   Widget build(BuildContext context) {
     return FutureBuilder<StaticCrossword>(
-        future: fetchCrosswordSkeleton(),
+        future: fetchCrosswordSkeleton(
+          crosswordId: crosswordId,
+          crosswordPath: crosswordPath,
+        ),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return snapshot.data;
@@ -37,11 +75,23 @@ class StaticCrossword extends StatefulWidget {
   final Grid grid;
   final List<Clue> acrossClues;
   final List<Clue> downClues;
+  final String crosswordPath;
+  final String crosswordId;
 
-  StaticCrossword({Key key, this.acrossClues, this.downClues, this.grid})
-      : super(key: key);
+  StaticCrossword({
+    Key key,
+    @required this.acrossClues,
+    @required this.downClues,
+    @required this.grid,
+    @required this.crosswordPath,
+    @required this.crosswordId,
+  }) : super(key: key);
 
-  factory StaticCrossword.fromJSON(Map<String, dynamic> json) {
+  factory StaticCrossword.fromJSON({
+    @required Map<String, dynamic> json,
+    @required String crosswordPath,
+    @required String crosswordId,
+  }) {
     final allClues = json["clues"];
     final aClues = allClues["across"];
     final dClues = allClues["down"];
@@ -49,9 +99,12 @@ class StaticCrossword extends StatefulWidget {
     parseClues(clues) =>
         clues.map<Clue>((jsonClue) => Clue.fromJSON(jsonClue)).toList();
     return StaticCrossword(
-        acrossClues: parseClues(aClues),
-        downClues: parseClues(dClues),
-        grid: Grid.fromJSON(json["grid"]));
+      acrossClues: parseClues(aClues),
+      downClues: parseClues(dClues),
+      grid: Grid.fromJSON(json["grid"]),
+      crosswordPath: crosswordPath,
+      crosswordId: crosswordId,
+    );
   }
 
   @override
@@ -69,16 +122,21 @@ class StaticCrosswordState extends State<StaticCrossword> {
     streamController.stream.listen(sendValueUpdate);
   }
 
-  static String charToJson(int rowIndex, int colIndex, String charToSet) {
+  static String charToJson({
+    @required int rowIndex,
+    @required int colIndex,
+    @required String charToSet,
+  }) {
     return charToSet.isEmpty
         ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
         : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
   }
 
-  static void sendValueUpdate(GridUpdate update) {
+  void sendValueUpdate(GridUpdate update) {
     final addr =
-        'https://csolve.herokuapp.com/solve/$CROSSWORD/the-everymen/set_cell';
-    final body = charToJson(update.row, update.column, update.value);
+        'https://csolve.herokuapp.com/solve/${widget.crosswordPath}/${widget.crosswordId}/the-everymen/set_cell';
+    final body = charToJson(
+        rowIndex: update.row, colIndex: update.column, charToSet: update.value);
     http.post(
       addr,
       headers: <String, String>{
@@ -92,7 +150,10 @@ class StaticCrosswordState extends State<StaticCrossword> {
     return Column(
       children: [
         StreamBuilder(
-          stream: streamGrids(),
+          stream: streamGrids(
+            crosswordId: widget.crosswordId,
+            crosswordPath: widget.crosswordPath,
+          ),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return _buildGridWidget(snapshot.data);
@@ -123,20 +184,37 @@ class StaticCrosswordState extends State<StaticCrossword> {
   }
 }
 
-Future<StaticCrossword> fetchCrosswordSkeleton() async {
-  final addr = 'https://csolve.herokuapp.com/crossword/$CROSSWORD';
+Future<StaticCrossword> fetchCrosswordSkeleton({
+  @required String crosswordPath,
+  @required String crosswordId,
+}) async {
+  assert(crosswordId != null);
+  assert(crosswordPath != null);
+  final addr =
+      'https://csolve.herokuapp.com/crossword/$crosswordPath/$crosswordId';
+
   final response = await http.get(addr);
 
   if (response.statusCode == 200) {
-    return StaticCrossword.fromJSON(json.decode(response.body));
+    return StaticCrossword.fromJSON(
+      json: json.decode(response.body),
+      crosswordId: crosswordId,
+      crosswordPath: crosswordPath,
+    );
   } else {
     throw Exception('Failed to load album');
   }
 }
 
-Stream<Grid> streamGrids() async* {
+Stream<Grid> streamGrids({
+  @required String crosswordPath,
+  @required String crosswordId,
+}) async* {
   yield* Stream.periodic(Duration(seconds: 5), (_) {
-    return fetchCrossword();
+    return fetchCrossword(
+      crosswordId: crosswordId,
+      crosswordPath: crosswordPath,
+    );
   }).asyncMap(
     (value) async => await value,
   );
@@ -150,7 +228,6 @@ class Grid {
   Grid({this.width, this.height, this.rows});
 
   static List<CellModel> _rowFromJSON(dynamic jsonIn) {
-    // debugPrint("called _rowFromJSON");
     List<CellModel> parsed =
         jsonIn.map<CellModel>((e) => CellModel.fromJSON(e)).toList();
     return parsed;
@@ -229,13 +306,17 @@ class Clue extends StatelessWidget {
   }
 }
 
-Future<Grid> fetchCrossword() async {
-  final addr = 'https://csolve.herokuapp.com/solve/$CROSSWORD/the-everymen/get';
+Future<Grid> fetchCrossword({
+  @required String crosswordPath,
+  @required String crosswordId,
+}) async {
+  final addr =
+      'https://csolve.herokuapp.com/solve/$crosswordPath/$crosswordId/the-everymen/get';
   final response = await http.get(addr);
 
   if (response.statusCode == 200) {
     return Grid.fromJSON(json.decode(response.body));
   } else {
-    throw Exception('Failed to load album');
+    throw Exception('Failed to load the crossword');
   }
 }
