@@ -32,11 +32,15 @@ class LetterGrid extends StatelessWidget {
       final col = i % width;
       final cellModel = rows[row][col];
 
-      return Cell(
-        number: cellModel.number,
-        value: cellModel.value,
-        onChange: (string) =>
-            streamController.add(GridUpdate(row, col, string)),
+      return Focus(
+        child: Builder(
+          builder: (BuildContext context) => Cell(
+            number: cellModel.number,
+            value: cellModel.value,
+            onChange: (string) =>
+                streamController.add(GridUpdate(row, col, string)),
+          ),
+        ),
       );
     };
 

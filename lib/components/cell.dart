@@ -2,15 +2,19 @@ import 'package:csolve/crossword_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class Cell extends StatelessWidget {
+class Cell extends StatefulWidget {
   final int number;
   final Value value;
   final Function(String) onChange;
+  Cell({Key key, this.number, this.value, this.onChange}) : super(key: key);
 
-  Cell({this.number, this.value, this.onChange});
+  @override
+  _CellState createState() => _CellState();
+}
 
+class _CellState extends State<Cell> {
   Widget build(BuildContext context) {
-    if (!value.open) {
+    if (!widget.value.open) {
       return Container(
           decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
@@ -19,9 +23,12 @@ class Cell extends StatelessWidget {
     }
 
     var controller = TextEditingController(
-      text: value.filled ? value.value : null,
+      text: widget.value.filled ? widget.value.value : null,
     );
     controller.selection = TextSelection(baseOffset: 0, extentOffset: 0);
+    final FocusNode focusNode = Focus.of(context);
+    final bool hasFocus = focusNode.hasFocus;
+    final boxColour = hasFocus ? Colors.blue : Colors.white;
 
     // onChanged we want to :
     // - Get the latest value, and update the box so that it's only one
@@ -36,7 +43,7 @@ class Cell extends StatelessWidget {
         text: controller.text.isEmpty ? '' : controller.text[0].toUpperCase(),
         selection: TextSelection(baseOffset: 0, extentOffset: 0),
       );
-      onChange(controller.text);
+      widget.onChange(controller.text);
     };
 
     final t = TextField(
@@ -49,13 +56,13 @@ class Cell extends StatelessWidget {
     final square = Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
-        color: Colors.white,
+        color: boxColour,
       ),
       child: Center(child: t),
     );
 
-    if (number != null) {
-      return Stack(children: [square, Text('$number')]);
+    if (widget.number != null) {
+      return Stack(children: [square, Text('${widget.number}')]);
     } else {
       return square;
     }
