@@ -15,30 +15,65 @@ class GridUpdate {
   GridUpdate(this.row, this.column, this.value) : assert(value.length <= 1);
 }
 
+/// Used to describe where the user has clicked and (TODO) the typing direction.
+class Cursor {
+  final int row;
+  final int column;
+
+  Cursor(this.row, this.column);
+}
+
 /// A grid of cells allowing the user to enter letters.
 ///
 /// User updates can be streamed to the caller using [streamController].
-class LetterGrid extends StatelessWidget {
+class LetterGrid extends StatefulWidget {
   final int width;
   final int height;
   final List<List<CellModel>> rows;
   final StreamController<GridUpdate> streamController;
 
-  LetterGrid(this.width, this.height, this.rows, this.streamController);
+  /// Suppose an Index is highligted, which other indexes should be?
+  final List<Index> Function(Cursor) highlightsMap;
+
+  LetterGrid(
+      {@required this.width,
+      @required this.height,
+      @required this.rows,
+      @required this.streamController,
+      @required this.highlightsMap});
+
+  @override
+  State<StatefulWidget> createState() => __LetterGridState();
+}
+
+class __LetterGridState extends State<LetterGrid> {
+  //TODO this should start blank
+  Cursor focusedSquare = Cursor(0, 0);
+  List<Index> lightHighlights;
+
+  void onFocus(int row, int column) {
+    setState(() {
+      focusedSquare = Cursor(row, column);
+      lightHighlights = widget.highlightsMap(focusedSquare);
+    });
+  }
 
   Widget build(BuildContext context) {
     final builder = (BuildContext context, i) {
-      final row = i ~/ width;
-      final col = i % width;
-      final cellModel = rows[row][col];
+      final row = i ~/ widget.width;
+      final col = i % widget.width;
+      final cellModel = widget.rows[row][col];
 
+      final highlighted = lightHighlights?.contains(Index(row, col));
       return Focus(
         child: Builder(
           builder: (BuildContext context) => Cell(
             number: cellModel.number,
             value: cellModel.value,
             onChange: (string) =>
-                streamController.add(GridUpdate(row, col, string)),
+                widget.streamController.add(GridUpdate(row, col, string)),
+            highlight: highlighted ?? false,
+            onFocus: () => onFocus(row, col),
           ),
         ),
       );
@@ -48,9 +83,9 @@ class LetterGrid extends StatelessWidget {
         color: Colors.white30,
         child: GridView.builder(
           shrinkWrap: true,
-          itemCount: width * height,
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: width),
+          itemCount: widget.width * widget.height,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: widget.width),
           itemBuilder: builder,
         ));
   }

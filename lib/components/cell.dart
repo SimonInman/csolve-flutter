@@ -6,13 +6,35 @@ class Cell extends StatefulWidget {
   final int number;
   final Value value;
   final Function(String) onChange;
-  Cell({Key key, this.number, this.value, this.onChange}) : super(key: key);
+  final bool highlight;
+  final Function() onFocus;
+  Cell({
+    Key key,
+    @required this.number,
+    @required this.value,
+    @required this.onChange,
+    @required this.highlight,
+    @required this.onFocus,
+  }) : super(key: key);
 
   @override
   _CellState createState() => _CellState();
 }
 
 class _CellState extends State<Cell> {
+  FocusNode _focus = new FocusNode();
+
+  void initState() {
+    super.initState();
+    _focus.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (_focus.hasFocus) {
+      widget.onFocus();
+    }
+  }
+
   Widget build(BuildContext context) {
     if (!widget.value.open) {
       return Container(
@@ -28,7 +50,15 @@ class _CellState extends State<Cell> {
     controller.selection = TextSelection(baseOffset: 0, extentOffset: 0);
     final FocusNode focusNode = Focus.of(context);
     final bool hasFocus = focusNode.hasFocus;
-    final boxColour = hasFocus ? Colors.blue : Colors.white;
+
+    Color boxColour;
+    if (hasFocus) {
+      boxColour = Colors.blue.shade700;
+    } else if (widget.highlight) {
+      boxColour = Colors.blue.shade100;
+    } else {
+      boxColour = Colors.white;
+    }
 
     // onChanged we want to :
     // - Get the latest value, and update the box so that it's only one
@@ -47,6 +77,8 @@ class _CellState extends State<Cell> {
     };
 
     final t = TextField(
+      autocorrect: false,
+      focusNode: _focus,
       controller: controller,
       onChanged: userChanged,
       textAlign: TextAlign.center,

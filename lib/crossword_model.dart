@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:quiver/core.dart';
 
 const CROSSWORD = 'guardian-cryptic/28259';
 
@@ -69,12 +70,42 @@ class CrosswordLoader extends StatelessWidget {
   }
 }
 
+/// Holds information mapping Cells onto Clues.
+///
+/// This allows highlight and navigation of clues.
+class ClueMapper {
+  final Map<Index, List<Index>> map;
+  ClueMapper({@required this.map}) : assert(map != null);
+
+  List<Index> call(Cursor cursor) {
+    final index = Index(cursor.row, cursor.column);
+    if (map.containsKey(index)) {
+      return map[index];
+    }
+    return [];
+  }
+
+  factory ClueMapper.fromClues(List<Clue> clues) {
+    Map<Index, List<Index>> map = Map();
+
+    for (final clue in clues) {
+      final span = clue.span;
+      for (final index in span) {
+        map[index] = span;
+      }
+    }
+    return ClueMapper(map: map);
+  }
+}
+
 // I'm not totally clear if having this as Stateful to handle disposal of the
 // StreamController is correct.
 class StaticCrossword extends StatefulWidget {
   final Grid grid;
+  // TODO do something more sensible to bring these clues together.
   final List<Clue> acrossClues;
   final List<Clue> downClues;
+  final ClueMapper mapper;
   final String crosswordPath;
   final String crosswordId;
 
@@ -85,7 +116,8 @@ class StaticCrossword extends StatefulWidget {
     @required this.grid,
     @required this.crosswordPath,
     @required this.crosswordId,
-  }) : super(key: key);
+  })  : mapper = ClueMapper.fromClues(acrossClues),
+        super(key: key);
 
   factory StaticCrossword.fromJSON({
     @required Map<String, dynamic> json,
@@ -174,7 +206,13 @@ class StaticCrosswordState extends State<StaticCrossword> {
   }
 
   Widget _buildGridWidget(Grid grid) {
-    return LetterGrid(grid.width, grid.height, grid.rows, streamController);
+    return LetterGrid(
+      width: grid.width,
+      height: grid.height,
+      rows: grid.rows,
+      streamController: streamController,
+      highlightsMap: widget.mapper.call,
+    );
   }
 
   @override
@@ -282,20 +320,48 @@ class CellModel {
   }
 }
 
+class Index {
+  final int row;
+  final int column;
+
+  Index(this.row, this.column);
+
+  factory Index.fromJSON(json) {
+    return Index(json["row"], json["column"]);
+  }
+
+  // TODO this is silly, just think of a better interface here.
+  bool operator ==(o) => o is Index && o.column == column && o.row == row;
+
+  int get hashCode => hash2(row, column);
+}
+
 class Clue extends StatelessWidget {
   final int number;
   final String surface;
   final int length;
   final String answer;
+  final Index position;
+  final List<Index> span;
 
-  Clue({this.number, this.surface, this.length, this.answer});
+  Clue(
+      {@required this.number,
+      @required this.surface,
+      @required this.length,
+      @required this.answer,
+      @required this.position,
+      @required this.span});
 
   factory Clue.fromJSON(json) {
+    Map<String, dynamic> span = json['span_info'];
+    List<dynamic> linearSpan = span['linear_span'];
     return Clue(
       number: json["number"],
       surface: json["surface"],
       length: json["length"],
       answer: json["answer"],
+      position: Index.fromJSON(json["position"]),
+      span: linearSpan.map<Index>((json) => Index.fromJSON(json)).toList(),
     );
   }
 
