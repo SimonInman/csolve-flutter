@@ -33,14 +33,14 @@ class LetterGrid extends StatefulWidget {
   final StreamController<GridUpdate> streamController;
 
   /// Suppose an Index is highligted, which other indexes should be?
-  final List<Index> Function(Cursor) highlightsMap;
+  final Clue Function(Cursor) clueMap;
 
   LetterGrid(
       {@required this.width,
       @required this.height,
       @required this.rows,
       @required this.streamController,
-      @required this.highlightsMap});
+      @required this.clueMap});
 
   @override
   State<StatefulWidget> createState() => __LetterGridState();
@@ -50,15 +50,18 @@ class __LetterGridState extends State<LetterGrid> {
   //TODO this should start blank
   Cursor focusedSquare = Cursor(0, 0);
   List<Index> lightHighlights;
+  Clue currentClue;
 
   void onFocus(int row, int column) {
     setState(() {
       focusedSquare = Cursor(row, column);
-      lightHighlights = widget.highlightsMap(focusedSquare);
+      currentClue = widget.clueMap(focusedSquare);
+      lightHighlights = widget.clueMap(focusedSquare)?.span;
     });
   }
 
   Widget build(BuildContext context) {
+    // todo extract
     final builder = (BuildContext context, i) {
       final row = i ~/ widget.width;
       final col = i % widget.width;
@@ -79,14 +82,20 @@ class __LetterGridState extends State<LetterGrid> {
       );
     };
 
-    return Container(
-        color: Colors.white30,
-        child: GridView.builder(
-          shrinkWrap: true,
-          itemCount: widget.width * widget.height,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: widget.width),
-          itemBuilder: builder,
-        ));
+    return Column(
+      children: [
+        // TODO: prettify this.
+        Text((currentClue == null) ? '' : currentClue.surface),
+        Container(
+            color: Colors.white30,
+            child: GridView.builder(
+              shrinkWrap: true,
+              itemCount: widget.width * widget.height,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: widget.width),
+              itemBuilder: builder,
+            )),
+      ],
+    );
   }
 }

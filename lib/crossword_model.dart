@@ -74,24 +74,24 @@ class CrosswordLoader extends StatelessWidget {
 ///
 /// This allows highlight and navigation of clues.
 class ClueMapper {
-  final Map<Index, List<Index>> map;
+  final Map<Index, Clue> map;
   ClueMapper({@required this.map}) : assert(map != null);
 
-  List<Index> call(Cursor cursor) {
+  Clue call(Cursor cursor) {
     final index = Index(cursor.row, cursor.column);
     if (map.containsKey(index)) {
       return map[index];
     }
-    return [];
+    return null;
   }
 
   factory ClueMapper.fromClues(List<Clue> clues) {
-    Map<Index, List<Index>> map = Map();
+    Map<Index, Clue> map = Map();
 
     for (final clue in clues) {
       final span = clue.span;
       for (final index in span) {
-        map[index] = span;
+        map[index] = clue;
       }
     }
     return ClueMapper(map: map);
@@ -211,7 +211,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
       height: grid.height,
       rows: grid.rows,
       streamController: streamController,
-      highlightsMap: widget.mapper.call,
+      clueMap: widget.mapper.call,
     );
   }
 

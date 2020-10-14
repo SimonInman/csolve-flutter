@@ -1,5 +1,4 @@
 import 'package:csolve/components/home_page.dart';
-import 'package:csolve/crossword_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 //TODO need to change something in android manifest file?
