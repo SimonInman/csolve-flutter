@@ -34,8 +34,8 @@ class LetterGrid extends StatefulWidget {
   final List<List<CellModel>> rows;
   final StreamController<GridUpdate> streamController;
 
-  /// Suppose an Index is highligted, which other indexes should be?
-  final Clue Function(Cursor) clueMap;
+  /// User clicks on a [Cell] - what Clue(s) is that [Cell] part of?
+  final List<Clue> Function(Cursor) clueMap;
 
   LetterGrid(
       {@required this.width,
@@ -57,9 +57,29 @@ class __LetterGridState extends State<LetterGrid> {
   void onFocus(int row, int column) {
     setState(() {
       focusedSquare = Cursor(row, column);
-      currentClue = widget.clueMap(focusedSquare);
-      lightHighlights = widget.clueMap(focusedSquare)?.span;
+      currentClue = _updateCurrentClue(focusedSquare);
+      lightHighlights = currentClue?.span;
     });
+  }
+
+  Clue _updateCurrentClue(Cursor focusedSquare) {
+    final clues = widget.clueMap(focusedSquare);
+    if (clues.length == 1) {
+      return clues[0];
+    }
+    // If we already had the user focused on one clue, it means they want to
+    // switch to the other clue. Otherwise, arbitrarily return the first clue.
+    // ?? Is this going to work? not sure if focus triggers a second time.
+    if (clues.length == 2) {
+      if (currentClue == clues[0]) {
+        return clues[1];
+      } else {
+        return clues[0];
+      }
+    }
+
+    // Should never happen.
+    return null;
   }
 
   Widget build(BuildContext context) {

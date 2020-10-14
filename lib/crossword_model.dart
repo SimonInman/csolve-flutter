@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import 'models/cell_index.dart';
 import 'models/clue.dart';
+import 'models/clue_mapper.dart';
 
 const CROSSWORD = 'guardian-cryptic/28259';
 
@@ -72,34 +73,6 @@ class CrosswordLoader extends StatelessWidget {
   }
 }
 
-/// Holds information mapping Cells onto Clues.
-///
-/// This allows highlight and navigation of clues.
-class ClueMapper {
-  final Map<Index, Clue> map;
-  ClueMapper({@required this.map}) : assert(map != null);
-
-  Clue call(Cursor cursor) {
-    final index = Index(cursor.row, cursor.column);
-    if (map.containsKey(index)) {
-      return map[index];
-    }
-    return null;
-  }
-
-  factory ClueMapper.fromClues(List<Clue> clues) {
-    Map<Index, Clue> map = Map();
-
-    for (final clue in clues) {
-      final span = clue.span;
-      for (final index in span) {
-        map[index] = clue;
-      }
-    }
-    return ClueMapper(map: map);
-  }
-}
-
 // I'm not totally clear if having this as Stateful to handle disposal of the
 // StreamController is correct.
 class StaticCrossword extends StatefulWidget {
@@ -118,7 +91,7 @@ class StaticCrossword extends StatefulWidget {
     @required this.grid,
     @required this.crosswordPath,
     @required this.crosswordId,
-  })  : mapper = ClueMapper.fromClues(acrossClues),
+  })  : mapper = ClueMapper.fromClues(acrossClues, downClues),
         super(key: key);
 
   factory StaticCrossword.fromJSON({
