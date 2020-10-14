@@ -61,27 +61,6 @@ class __LetterGridState extends State<LetterGrid> {
   }
 
   Widget build(BuildContext context) {
-    // todo extract
-    final builder = (BuildContext context, i) {
-      final row = i ~/ widget.width;
-      final col = i % widget.width;
-      final cellModel = widget.rows[row][col];
-
-      final highlighted = lightHighlights?.contains(Index(row, col));
-      return Focus(
-        child: Builder(
-          builder: (BuildContext context) => Cell(
-            number: cellModel.number,
-            value: cellModel.value,
-            onChange: (string) =>
-                widget.streamController.add(GridUpdate(row, col, string)),
-            highlight: highlighted ?? false,
-            onFocus: () => onFocus(row, col),
-          ),
-        ),
-      );
-    };
-
     return Column(
       children: [
         // TODO: prettify this.
@@ -93,9 +72,29 @@ class __LetterGridState extends State<LetterGrid> {
               itemCount: widget.width * widget.height,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: widget.width),
-              itemBuilder: builder,
+              itemBuilder: _cellBuilder,
             )),
       ],
+    );
+  }
+
+  Widget _cellBuilder(BuildContext context, i) {
+    final row = i ~/ widget.width;
+    final col = i % widget.width;
+    final cellModel = widget.rows[row][col];
+
+    final highlighted = lightHighlights?.contains(Index(row, col));
+    return Focus(
+      child: Builder(
+        builder: (BuildContext context) => Cell(
+          number: cellModel.number,
+          value: cellModel.value,
+          onChange: (string) =>
+              widget.streamController.add(GridUpdate(row, col, string)),
+          highlight: highlighted ?? false,
+          onFocus: () => onFocus(row, col),
+        ),
+      ),
     );
   }
 }
