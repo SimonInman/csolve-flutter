@@ -22,19 +22,6 @@ class Cell extends StatefulWidget {
 }
 
 class _CellState extends State<Cell> {
-  FocusNode _focus = new FocusNode();
-
-  void initState() {
-    super.initState();
-    _focus.addListener(_onFocusChange);
-  }
-
-  void _onFocusChange() {
-    if (_focus.hasFocus) {
-      widget.onFocus();
-    }
-  }
-
   Widget build(BuildContext context) {
     if (!widget.value.open) {
       return Container(
@@ -78,11 +65,11 @@ class _CellState extends State<Cell> {
 
     final t = TextField(
       autocorrect: false,
-      focusNode: _focus,
       controller: controller,
       onChanged: userChanged,
       textAlign: TextAlign.center,
       style: TextStyle(color: Colors.black),
+      onTap: widget.onFocus,
     );
 
     final square = Container(
