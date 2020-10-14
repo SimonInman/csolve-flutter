@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:csolve/models/cell_index.dart';
+import 'package:csolve/models/clue.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import '../crossword_model.dart';

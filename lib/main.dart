@@ -3,13 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 //TODO need to change something in android manifest file?
 
-/// TODOS:
-/// Prettify Text Entry
-/// fix overflow when keyboard pops up - don't care about this, so how to basically
-///    ignore or say "just fill whatever"? Little suprised it doesn't work already.
-///    Maybe ask Keith.
-
-/////// Widget building
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {

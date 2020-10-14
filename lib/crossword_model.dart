@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:quiver/core.dart';
+
+import 'models/cell_index.dart';
+import 'models/clue.dart';
 
 const CROSSWORD = 'guardian-cryptic/28259';
 
@@ -317,58 +319,6 @@ class CellModel {
       number: json["number"],
       value: Value.fromJSON(json["value"]),
     );
-  }
-}
-
-class Index {
-  final int row;
-  final int column;
-
-  Index(this.row, this.column);
-
-  factory Index.fromJSON(json) {
-    return Index(json["row"], json["column"]);
-  }
-
-  // TODO this is silly, just think of a better interface here.
-  bool operator ==(o) => o is Index && o.column == column && o.row == row;
-
-  int get hashCode => hash2(row, column);
-}
-
-class Clue extends StatelessWidget {
-  final int number;
-  final String surface;
-  final int length;
-  final String answer;
-  final Index position;
-  final List<Index> span;
-
-  Clue(
-      {@required this.number,
-      @required this.surface,
-      @required this.length,
-      @required this.answer,
-      @required this.position,
-      @required this.span});
-
-  factory Clue.fromJSON(json) {
-    Map<String, dynamic> span = json['span_info'];
-    List<dynamic> linearSpan = span['linear_span'];
-    return Clue(
-      number: json["number"],
-      surface: json["surface"],
-      length: json["length"],
-      answer: json["answer"],
-      position: Index.fromJSON(json["position"]),
-      span: linearSpan.map<Index>((json) => Index.fromJSON(json)).toList(),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final text = '$number . $surface';
-    return Text(text);
   }
 }
 
