@@ -5,7 +5,6 @@ import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'models/cell_index.dart';
 import 'models/clue.dart';
 import 'models/clue_mapper.dart';
 

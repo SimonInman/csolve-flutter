@@ -6,6 +6,10 @@ class Index {
 
   Index(this.row, this.column);
 
+  bool equal(row, column) {
+    return row == this.row && column == this.column;
+  }
+
   factory Index.fromJSON(json) {
     return Index(json["row"], json["column"]);
   }

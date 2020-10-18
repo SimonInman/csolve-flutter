@@ -8,6 +8,21 @@ class Cell extends StatefulWidget {
   final Function(String) onChange;
   final bool highlight;
   final Function() onFocus;
+  final Function() onAdvanceCursor;
+
+  /// Should this square be focused on construction?
+  // final bool autoFocus;
+
+  /// Where the cursor should move next, if this cell is typed in.
+  ///
+  /// Will be null if this cell is not focused.
+  // final FocusNode nextFocus;
+
+  /// Focus for this cell, if it is next-in-line to be focused.
+  ///
+  /// Will be null if this cell is not next-in-line to be focused.
+  final FocusNode thisFocus;
+
   Cell({
     Key key,
     @required this.number,
@@ -15,6 +30,10 @@ class Cell extends StatefulWidget {
     @required this.onChange,
     @required this.highlight,
     @required this.onFocus,
+    @required this.onAdvanceCursor,
+    // @required this.autoFocus,
+    // this.nextFocus,
+    this.thisFocus,
   }) : super(key: key);
 
   @override
@@ -60,7 +79,25 @@ class _CellState extends State<Cell> {
         text: controller.text.isEmpty ? '' : controller.text[0].toUpperCase(),
         selection: TextSelection(baseOffset: 0, extentOffset: 0),
       );
+      // Update parent with state change...
       widget.onChange(controller.text);
+      if (controller.text.isNotEmpty) {
+        // ...but only advance cursor and remove focus from this node if there's
+        // some content.
+        focusNode.unfocus();
+        widget.onAdvanceCursor();
+
+        // TODO: The above has a few problems:
+        // 1) We get multiple cursors despite unfocusing.
+        // 2) For some reason, having either of unfocus/onAdvanceCursor breaks
+        //    the controller.value change. I can't really understand this -
+        //    perhaps the parent rebuilts "over" the update? But it breaks even
+        //    in a post-frame callback.
+        // 3) We are using two different focus nodes, so it's quite confusing.
+        //
+        // Realistically want to use another method - I think an
+        // OrderedTraversalGroup could potentially work.
+      }
     };
 
     final t = TextField(
@@ -70,6 +107,8 @@ class _CellState extends State<Cell> {
       textAlign: TextAlign.center,
       style: TextStyle(color: Colors.black),
       onTap: widget.onFocus,
+      // autofocus: widget.autoFocus,
+      focusNode: widget.thisFocus,
     );
 
     final square = Container(

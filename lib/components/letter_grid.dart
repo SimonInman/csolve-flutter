@@ -18,6 +18,8 @@ class GridUpdate {
 }
 
 /// Used to describe where the user has clicked and (TODO) the typing direction.
+// TODO this class is now surplus to requirements in the current design. Replace
+// with index.
 class Cursor {
   final int row;
   final int column;
@@ -53,12 +55,38 @@ class __LetterGridState extends State<LetterGrid> {
   Cursor focusedSquare = Cursor(0, 0);
   List<Index> lightHighlights;
   Clue currentClue;
+  Index nextFocusIndex;
+  FocusNode nextFocusNode;
+
+  @override
+  void initState() {
+    nextFocusNode = new FocusNode();
+    super.initState();
+  }
 
   void onFocus(int row, int column) {
     setState(() {
       focusedSquare = Cursor(row, column);
       currentClue = _updateCurrentClue(focusedSquare);
       lightHighlights = currentClue?.span;
+      nextFocusIndex = currentClue.nextSquare(Index(row, column));
+    });
+  }
+
+  void onAdvanceCursor() {
+    setState(() {
+      // probably this nextFocusIndex doesn't even need to be stateful any more?
+      // it can jjust be a local variable
+      // nextFocusIndex = currentClue.nextSquare(Index(row, column));
+      if (nextFocusIndex != null) {
+        // onFocus(nextFocusIndex.row, nextFocusIndex.column);
+        nextFocusNode.requestFocus();
+        focusedSquare = Cursor(nextFocusIndex.row, nextFocusIndex.column);
+        // currentClue = _updateCurrentClue(focusedSquare);
+        // lightHighlights = currentClue?.span;
+        nextFocusIndex = currentClue
+            .nextSquare(Index(nextFocusIndex.row, nextFocusIndex.column));
+      }
     });
   }
 
@@ -80,6 +108,12 @@ class __LetterGridState extends State<LetterGrid> {
 
     // Should never happen.
     return null;
+  }
+
+  @override
+  void dispose() {
+    nextFocusNode.dispose();
+    super.dispose();
   }
 
   Widget build(BuildContext context) {
@@ -106,6 +140,27 @@ class __LetterGridState extends State<LetterGrid> {
     final cellModel = widget.rows[row][col];
 
     final highlighted = lightHighlights?.contains(Index(row, col));
+
+    // When the user fills in the current square, we want to request focus on
+    // the next square. This requires handing our FocusNode to both the focused
+    // square and the next square.
+    // FocusNode nextFocus;
+    FocusNode thisFocus;
+    // if (row == focusedSquare.row && col == focusedSquare.column) {
+    //   nextFocus = nextFocusNode;
+    // } else if (nextFocusIndex != null && nextFocusIndex.equal(row, col)) {
+    //   thisFocus = nextFocusNode;
+    // }
+    if (nextFocusIndex != null && nextFocusIndex.equal(row, col)) {
+      thisFocus = nextFocusNode;
+    }
+
+    // bool autoFocus = false;
+    // if (focusedSquare.row == row && focusedSquare.column == col) {
+    //   debugPrint('building autofocus for square $row, $col');
+    //   autoFocus = true;
+    // }
+
     return Focus(
       child: Builder(
         builder: (BuildContext context) => Cell(
@@ -115,6 +170,10 @@ class __LetterGridState extends State<LetterGrid> {
               widget.streamController.add(GridUpdate(row, col, string)),
           highlight: highlighted ?? false,
           onFocus: () => onFocus(row, col),
+          onAdvanceCursor: onAdvanceCursor,
+          // autoFocus: autoFocus,
+          // nextFocus: nextFocus,
+          thisFocus: thisFocus,
         ),
       ),
     );
