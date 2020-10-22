@@ -33,9 +33,11 @@ class CrosswordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-          child: CrosswordLoader(
-        crosswordId: crosswordId,
-        crosswordPath: crosswordPath,
+          child: SingleChildScrollView(
+        child: CrosswordLoader(
+          crosswordId: crosswordId,
+          crosswordPath: crosswordPath,
+        ),
       )),
     );
   }
@@ -166,11 +168,10 @@ class StaticCrosswordState extends State<StaticCrossword> {
             return CircularProgressIndicator();
           },
         ),
-        Flexible(
-          child: ListView(
-            padding: EdgeInsets.all(5),
-            children: widget.acrossClues + widget.downClues,
-          ),
+        ListView(
+          shrinkWrap: true,
+          padding: EdgeInsets.all(5),
+          children: widget.acrossClues + widget.downClues,
         ),
       ],
     );
