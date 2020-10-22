@@ -13,11 +13,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Crossword Width',
+      title: 'Crossword',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('here is a second title?'),
+          title: Text('CSolve'),
         ),
         body: Center(
           child: HomePage(),
