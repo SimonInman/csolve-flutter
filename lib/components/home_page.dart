@@ -81,11 +81,11 @@ class _HomePageState extends State<HomePage> {
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       idField,
-      Text(
-        'Solve Group',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      solveGroupField,
+      // Text(
+      //   'Solve Group',
+      //   style: TextStyle(fontWeight: FontWeight.bold),
+      // ),
+      // solveGroupField,
       button,
     ]);
   }
