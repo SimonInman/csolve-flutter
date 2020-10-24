@@ -120,7 +120,13 @@ class _CellState extends State<Cell> {
     );
 
     if (widget.number != null) {
-      return Stack(children: [square, Text('${widget.number}')]);
+      return Stack(children: [
+        square,
+        Text(
+          '${widget.number}',
+          style: TextStyle(fontSize: 11),
+        ),
+      ]);
     } else {
       return square;
     }
