@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import 'models/clue.dart';
 import 'models/clue_mapper.dart';
+import 'network/network.dart';
 
 const CROSSWORD = 'guardian-cryptic/28259';
 
@@ -124,7 +124,8 @@ class StaticCrosswordState extends State<StaticCrossword> {
   @override
   void initState() {
     super.initState();
-    streamController.stream.listen(sendValueUpdate);
+    streamController.stream.listen((update) =>
+        sendValueUpdate(update, widget.crosswordPath, widget.crosswordId));
   }
 
   static String charToJson({
@@ -137,9 +138,13 @@ class StaticCrosswordState extends State<StaticCrossword> {
         : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
   }
 
-  void sendValueUpdate(GridUpdate update) {
+  static void sendValueUpdate(
+    GridUpdate update,
+    String crosswordPath,
+    String crosswordId,
+  ) {
     final addr =
-        'https://csolve.herokuapp.com/solve/${widget.crosswordPath}/${widget.crosswordId}/the-everymen/set_cell';
+        'https://csolve.herokuapp.com/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
     final body = charToJson(
         rowIndex: update.row, colIndex: update.column, charToSet: update.value);
     http.post(
@@ -154,19 +159,21 @@ class StaticCrosswordState extends State<StaticCrossword> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        StreamBuilder(
-          stream: streamGrids(
-            crosswordId: widget.crosswordId,
-            crosswordPath: widget.crosswordPath,
+        SingleChildScrollView(
+          child: StreamBuilder(
+            stream: streamGrids(
+              crosswordId: widget.crosswordId,
+              crosswordPath: widget.crosswordPath,
+            ),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return _buildGridWidget(snapshot.data);
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
+              return CircularProgressIndicator();
+            },
           ),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return _buildGridWidget(snapshot.data);
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return CircularProgressIndicator();
-          },
         ),
         ListView(
           shrinkWrap: true,
@@ -191,28 +198,6 @@ class StaticCrosswordState extends State<StaticCrossword> {
   void dispose() {
     super.dispose();
     streamController.close();
-  }
-}
-
-Future<StaticCrossword> fetchCrosswordSkeleton({
-  @required String crosswordPath,
-  @required String crosswordId,
-}) async {
-  assert(crosswordId != null);
-  assert(crosswordPath != null);
-  final addr =
-      'https://csolve.herokuapp.com/crossword/$crosswordPath/$crosswordId';
-
-  final response = await http.get(addr);
-
-  if (response.statusCode == 200) {
-    return StaticCrossword.fromJSON(
-      json: json.decode(response.body),
-      crosswordId: crosswordId,
-      crosswordPath: crosswordPath,
-    );
-  } else {
-    throw Exception('Failed to load album');
   }
 }
 
@@ -289,20 +274,5 @@ class CellModel {
       number: json["number"],
       value: Value.fromJSON(json["value"]),
     );
-  }
-}
-
-Future<Grid> fetchCrossword({
-  @required String crosswordPath,
-  @required String crosswordId,
-}) async {
-  final addr =
-      'https://csolve.herokuapp.com/solve/$crosswordPath/$crosswordId/the-everymen/get';
-  final response = await http.get(addr);
-
-  if (response.statusCode == 200) {
-    return Grid.fromJSON(json.decode(response.body));
-  } else {
-    throw Exception('Failed to load the crossword');
   }
 }
