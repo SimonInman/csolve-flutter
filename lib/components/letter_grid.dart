@@ -120,7 +120,9 @@ class __LetterGridState extends State<LetterGrid> {
     return Column(
       children: [
         // TODO: prettify this.
-        Text((currentClue == null) ? '' : currentClue.surface),
+        Text((currentClue == null)
+            ? ''
+            : '${currentClue.number}: ${currentClue.surface}'),
         Container(
             color: Colors.white30,
             child: GridView.builder(
