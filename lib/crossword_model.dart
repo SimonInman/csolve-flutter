@@ -4,8 +4,10 @@ import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'models/cell.dart';
 import 'models/clue.dart';
 import 'models/clue_mapper.dart';
+import 'models/grid.dart';
 import 'network/network.dart';
 
 const CROSSWORD = 'guardian-cryptic/28259';
@@ -213,66 +215,4 @@ Stream<Grid> streamGrids({
   }).asyncMap(
     (value) async => await value,
   );
-}
-
-class Grid {
-  final int width;
-  final int height;
-  final List<List<CellModel>> rows;
-
-  Grid({this.width, this.height, this.rows});
-
-  static List<CellModel> _rowFromJSON(dynamic jsonIn) {
-    List<CellModel> parsed =
-        jsonIn.map<CellModel>((e) => CellModel.fromJSON(e)).toList();
-    return parsed;
-  }
-
-  factory Grid.fromJSON(Map<String, dynamic> jsonIn) {
-    final List<dynamic> cells = jsonIn['cells'];
-
-    final parsedRows = cells.map<List<CellModel>>(_rowFromJSON).toList();
-    return Grid(
-      width: jsonIn['width'],
-      height: jsonIn['height'],
-      rows: parsedRows,
-    );
-  }
-}
-
-class Value {
-  final bool open;
-  final bool filled;
-  final String value;
-
-  Value({this.open, this.filled, this.value});
-
-  factory Value.fromJSON(json) {
-    if (json is Map) {
-      final charValue = json["Char"]["value"];
-      return Value(open: true, filled: true, value: charValue);
-    } else {
-      if (json == "Closed") {
-        return Value(open: false, filled: false);
-      } else if (json == "Open") {
-        return Value(open: true, filled: false);
-      } else {
-        throw Exception("UNKNOWN VALUE: $json");
-      }
-    }
-  }
-}
-
-class CellModel {
-  final int number;
-  final Value value;
-
-  CellModel({this.number, this.value});
-
-  factory CellModel.fromJSON(json) {
-    return CellModel(
-      number: json["number"],
-      value: Value.fromJSON(json["value"]),
-    );
-  }
 }

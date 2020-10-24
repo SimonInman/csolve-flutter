@@ -1,4 +1,4 @@
-import 'package:csolve/crossword_model.dart';
+import 'package:csolve/models/cell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
