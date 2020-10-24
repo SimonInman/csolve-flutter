@@ -124,7 +124,7 @@ class _CellState extends State<Cell> {
         square,
         Text(
           '${widget.number}',
-          style: TextStyle(fontSize: 11),
+          style: TextStyle(fontSize: 11, color: Colors.black54),
         ),
       ]);
     } else {
