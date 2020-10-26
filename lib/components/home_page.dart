@@ -1,10 +1,12 @@
 import 'package:csolve/crossword_model.dart';
+import 'package:csolve/network/network.dart';
 import 'package:flutter/material.dart';
 
 const SOURCES = [
   'guardian-cryptic',
   'guardian-quiptic',
   'guardian-prize',
+  'guardian-everyman',
   'independent',
   'nyt',
   'new-yorker',
@@ -17,9 +19,43 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String crosswordPath = 'independent';
-  String crosswordId = '';
+  String crosswordId;
   // TODO this isn't actually used yet
   String solveGroup = 'the-everymen';
+
+  Future<DropdownButton> buildButton() async {
+    final list = await fetchSuggestions(crosswordPath: crosswordPath);
+    final dropdownItems = list
+        .map((suggestion) => new DropdownMenuItem(
+              value: suggestion.id,
+              child: new Text(suggestion.prettyPrint()),
+            ))
+        .toList();
+    return DropdownButton<String>(
+      hint: Text('Select a crossword...'),
+      value: crosswordId,
+      items: dropdownItems,
+      onChanged: (String newValue) {
+        setState(() {
+          crosswordId = newValue;
+        });
+      },
+    );
+  }
+
+  Widget suggestionsList() {
+    return FutureBuilder<DropdownButton>(
+      future: buildButton(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return snapshot.data;
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return CircularProgressIndicator();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +64,14 @@ class _HomePageState extends State<HomePage> {
             new DropdownMenuItem(value: value, child: new Text(value)))
         .toList();
 
-    final dropdown = DropdownButton<String>(
+    final sourceDropdown = DropdownButton<String>(
       value: crosswordPath,
       items: dropdownItems,
       style: TextStyle(color: Colors.deepPurple),
       onChanged: (String newValue) {
         setState(() {
           crosswordPath = newValue;
+          crosswordId = null;
         });
       },
     );
@@ -75,12 +112,12 @@ class _HomePageState extends State<HomePage> {
         'Source',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      dropdown,
+      sourceDropdown,
       Text(
         'ID',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      idField,
+      suggestionsList(),
       // Text(
       //   'Solve Group',
       //   style: TextStyle(fontWeight: FontWeight.bold),
