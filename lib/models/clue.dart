@@ -45,7 +45,15 @@ class Clue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = '$number . $surface';
-    return Text(text);
+    final boldStyle = new TextStyle(fontWeight: FontWeight.bold);
+    return RichText(
+      text: new TextSpan(
+        style: new TextStyle(color: Colors.black),
+        children: <TextSpan>[
+          new TextSpan(text: '$number. ', style: boldStyle),
+          new TextSpan(text: surface)
+        ],
+      ),
+    );
   }
 }

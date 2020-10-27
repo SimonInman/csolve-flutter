@@ -164,7 +164,21 @@ class StaticCrosswordState extends State<StaticCrossword> {
     );
   }
 
+  Widget _clueHeaders(String acrossOrDown) {
+    return Text(
+      acrossOrDown,
+      style: TextStyle(fontWeight: FontWeight.bold),
+    );
+  }
+
   Widget build(BuildContext context) {
+    List<Widget> clueWidgets = [
+      _clueHeaders('Across'),
+      ...widget.acrossClues,
+      _clueHeaders('Down'),
+      ...widget.downClues
+    ];
+
     return Column(
       children: [
         SingleChildScrollView(
@@ -186,7 +200,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
         ListView(
           shrinkWrap: true,
           padding: EdgeInsets.all(5),
-          children: widget.acrossClues + widget.downClues,
+          children: clueWidgets,
         ),
       ],
     );
