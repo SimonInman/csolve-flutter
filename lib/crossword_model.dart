@@ -41,11 +41,9 @@ class CrosswordScreen extends StatelessWidget {
         ),
       ),
       body: Center(
-          child: SingleChildScrollView(
-        child: CrosswordLoader(
-          crosswordId: crosswordId,
-          crosswordPath: crosswordPath,
-        ),
+          child: CrosswordLoader(
+        crosswordId: crosswordId,
+        crosswordPath: crosswordPath,
       )),
     );
   }
@@ -179,10 +177,11 @@ class StaticCrosswordState extends State<StaticCrossword> {
       ...widget.downClues
     ];
 
-    return Column(
-      children: [
-        SingleChildScrollView(
-          child: StreamBuilder(
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          StreamBuilder(
             stream: streamGrids(
               crosswordId: widget.crosswordId,
               crosswordPath: widget.crosswordPath,
@@ -196,13 +195,14 @@ class StaticCrosswordState extends State<StaticCrossword> {
               return CircularProgressIndicator();
             },
           ),
-        ),
-        ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.all(5),
-          children: clueWidgets,
-        ),
-      ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: clueWidgets,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

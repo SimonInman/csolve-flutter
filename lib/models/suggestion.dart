@@ -14,7 +14,6 @@ class Suggestion {
   }
 
   factory Suggestion.fromJSON(json) {
-    print('json in: $json');
     return Suggestion(
       id: json["id"],
       helpfulTag: json["helpful_tag"],

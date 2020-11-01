@@ -5,6 +5,7 @@ import 'package:csolve/models/cell_index.dart';
 import 'package:csolve/models/clue.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:quiver/check.dart';
 import 'cell.dart';
 
 /// A user update to a cell in the grid.
@@ -123,10 +124,12 @@ class __LetterGridState extends State<LetterGrid> {
         Text((currentClue == null)
             ? ''
             : '${currentClue.number}: ${currentClue.surface}'),
+
         Container(
             color: Colors.white30,
             child: GridView.builder(
               shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
               itemCount: widget.width * widget.height,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: widget.width),
