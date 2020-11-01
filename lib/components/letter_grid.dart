@@ -78,13 +78,9 @@ class __LetterGridState extends State<LetterGrid> {
     setState(() {
       // probably this nextFocusIndex doesn't even need to be stateful any more?
       // it can jjust be a local variable
-      // nextFocusIndex = currentClue.nextSquare(Index(row, column));
       if (nextFocusIndex != null) {
-        // onFocus(nextFocusIndex.row, nextFocusIndex.column);
         nextFocusNode.requestFocus();
         focusedSquare = Cursor(nextFocusIndex.row, nextFocusIndex.column);
-        // currentClue = _updateCurrentClue(focusedSquare);
-        // lightHighlights = currentClue?.span;
         nextFocusIndex = currentClue
             .nextSquare(Index(nextFocusIndex.row, nextFocusIndex.column));
       }
@@ -151,20 +147,9 @@ class __LetterGridState extends State<LetterGrid> {
     // square and the next square.
     // FocusNode nextFocus;
     FocusNode thisFocus;
-    // if (row == focusedSquare.row && col == focusedSquare.column) {
-    //   nextFocus = nextFocusNode;
-    // } else if (nextFocusIndex != null && nextFocusIndex.equal(row, col)) {
-    //   thisFocus = nextFocusNode;
-    // }
     if (nextFocusIndex != null && nextFocusIndex.equal(row, col)) {
       thisFocus = nextFocusNode;
     }
-
-    // bool autoFocus = false;
-    // if (focusedSquare.row == row && focusedSquare.column == col) {
-    //   debugPrint('building autofocus for square $row, $col');
-    //   autoFocus = true;
-    // }
 
     return Focus(
       child: Builder(
