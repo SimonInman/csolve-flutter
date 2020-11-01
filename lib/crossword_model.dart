@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import 'models/cell.dart';
 import 'models/clue.dart';
 import 'models/clue_mapper.dart';
 import 'models/grid.dart';
@@ -134,34 +132,6 @@ class StaticCrosswordState extends State<StaticCrossword> {
         sendValueUpdate(update, widget.crosswordPath, widget.crosswordId));
   }
 
-  static String charToJson({
-    @required int rowIndex,
-    @required int colIndex,
-    @required String charToSet,
-  }) {
-    return charToSet.isEmpty
-        ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
-        : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
-  }
-
-  static void sendValueUpdate(
-    GridUpdate update,
-    String crosswordPath,
-    String crosswordId,
-  ) {
-    final addr =
-        'https://csolve.herokuapp.com/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
-    final body = charToJson(
-        rowIndex: update.row, colIndex: update.column, charToSet: update.value);
-    http.post(
-      addr,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: body,
-    );
-  }
-
   Widget _clueHeaders(String acrossOrDown) {
     return Text(
       acrossOrDown,
@@ -170,6 +140,23 @@ class StaticCrosswordState extends State<StaticCrossword> {
   }
 
   Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: streamGrids(
+        crosswordId: widget.crosswordId,
+        crosswordPath: widget.crosswordPath,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return _build(context, snapshot.data);
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return CircularProgressIndicator();
+      },
+    );
+  }
+
+  Widget _build(BuildContext context, Grid grid) {
     List<Widget> clueWidgets = [
       _clueHeaders('Across'),
       ...widget.acrossClues,
@@ -181,20 +168,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          StreamBuilder(
-            stream: streamGrids(
-              crosswordId: widget.crosswordId,
-              crosswordPath: widget.crosswordPath,
-            ),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return _buildGridWidget(snapshot.data);
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              return CircularProgressIndicator();
-            },
-          ),
+          _buildGridWidget(grid),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

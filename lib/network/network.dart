@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:csolve/components/letter_grid.dart';
 import 'package:csolve/models/grid.dart';
 import 'package:csolve/models/suggestion.dart';
 import 'package:http/http.dart' as http;
@@ -58,4 +59,32 @@ Future<List<Suggestion>> fetchSuggestions({String crosswordPath}) async {
   } else {
     throw Exception('failed to load suggestions');
   }
+}
+
+String charToJson({
+  @required int rowIndex,
+  @required int colIndex,
+  @required String charToSet,
+}) {
+  return charToSet.isEmpty
+      ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
+      : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
+}
+
+void sendValueUpdate(
+  GridUpdate update,
+  String crosswordPath,
+  String crosswordId,
+) {
+  final addr =
+      'https://csolve.herokuapp.com/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
+  final body = charToJson(
+      rowIndex: update.row, colIndex: update.column, charToSet: update.value);
+  http.post(
+    addr,
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: body,
+  );
 }
