@@ -227,6 +227,10 @@ Stream<Grid> streamGrids({
   @required String crosswordPath,
   @required String crosswordId,
 }) async* {
+  yield await fetchCrossword(
+    crosswordId: crosswordId,
+    crosswordPath: crosswordPath,
+  );
   yield* Stream.periodic(Duration(seconds: 5), (_) {
     return fetchCrossword(
       crosswordId: crosswordId,
