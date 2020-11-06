@@ -18,16 +18,6 @@ class GridUpdate {
   GridUpdate(this.row, this.column, this.value) : assert(value.length <= 1);
 }
 
-/// Used to describe where the user has clicked and (TODO) the typing direction.
-// TODO this class is now surplus to requirements in the current design. Replace
-// with index.
-class Cursor {
-  final int row;
-  final int column;
-
-  Cursor(this.row, this.column);
-}
-
 /// A grid of cells allowing the user to enter letters.
 ///
 /// User updates can be streamed to the caller using [streamController].
@@ -36,16 +26,21 @@ class LetterGrid extends StatefulWidget {
   final int height;
   final List<List<CellModel>> rows;
   final StreamController<GridUpdate> streamController;
+  final Clue currentClue;
+  List<Index> lightHighlights;
 
-  /// User clicks on a [Cell] - what Clue(s) is that [Cell] part of?
-  final List<Clue> Function(Cursor) clueMap;
+  // Callback when the user clicks on a square.
+  final void Function(Index) updateFocus;
 
-  LetterGrid(
-      {@required this.width,
-      @required this.height,
-      @required this.rows,
-      @required this.streamController,
-      @required this.clueMap});
+  LetterGrid({
+    @required this.width,
+    @required this.height,
+    @required this.rows,
+    @required this.streamController,
+    @required this.currentClue,
+    @required this.updateFocus,
+    // @required this.focusedSquare,
+  }) : lightHighlights = currentClue?.span;
 
   @override
   State<StatefulWidget> createState() => __LetterGridState();
@@ -53,25 +48,20 @@ class LetterGrid extends StatefulWidget {
 
 class __LetterGridState extends State<LetterGrid> {
   //TODO this should start blank
-  Cursor focusedSquare = Cursor(0, 0);
-  List<Index> lightHighlights;
-  Clue currentClue;
+  Index focusedSquare = Index(0, 0);
   Index nextFocusIndex;
   FocusNode nextFocusNode;
 
   @override
   void initState() {
     nextFocusNode = new FocusNode();
+    // nextFocusIndex = widget.currentClue?.nextSquare(
+    //     Index(widget.focusedSquare.row, widget.focusedSquare.column));
     super.initState();
   }
 
   void onFocus(int row, int column) {
-    setState(() {
-      focusedSquare = Cursor(row, column);
-      currentClue = _updateCurrentClue(focusedSquare);
-      lightHighlights = currentClue?.span;
-      nextFocusIndex = currentClue.nextSquare(Index(row, column));
-    });
+    widget.updateFocus(Index(row, column));
   }
 
   void onAdvanceCursor() {
@@ -80,31 +70,11 @@ class __LetterGridState extends State<LetterGrid> {
       // it can jjust be a local variable
       if (nextFocusIndex != null) {
         nextFocusNode.requestFocus();
-        focusedSquare = Cursor(nextFocusIndex.row, nextFocusIndex.column);
-        nextFocusIndex = currentClue
+        focusedSquare = Index(nextFocusIndex.row, nextFocusIndex.column);
+        nextFocusIndex = widget.currentClue
             .nextSquare(Index(nextFocusIndex.row, nextFocusIndex.column));
       }
     });
-  }
-
-  Clue _updateCurrentClue(Cursor focusedSquare) {
-    final clues = widget.clueMap(focusedSquare);
-    if (clues.length == 1) {
-      return clues[0];
-    }
-    // If we already had the user focused on one clue, it means they want to
-    // switch to the other clue. Otherwise, arbitrarily return the first clue.
-    // ?? Is this going to work? not sure if focus triggers a second time.
-    if (clues.length == 2) {
-      if (currentClue == clues[0]) {
-        return clues[1];
-      } else {
-        return clues[0];
-      }
-    }
-
-    // Should never happen.
-    return null;
   }
 
   @override
@@ -116,11 +86,6 @@ class __LetterGridState extends State<LetterGrid> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // TODO: prettify this.
-        Text((currentClue == null)
-            ? ''
-            : '${currentClue.number}: ${currentClue.surface}'),
-
         Container(
             color: Colors.white30,
             child: GridView.builder(
@@ -140,7 +105,7 @@ class __LetterGridState extends State<LetterGrid> {
     final col = i % widget.width;
     final cellModel = widget.rows[row][col];
 
-    final highlighted = lightHighlights?.contains(Index(row, col));
+    final highlighted = widget.lightHighlights?.contains(Index(row, col));
 
     // When the user fills in the current square, we want to request focus on
     // the next square. This requires handing our FocusNode to both the focused
@@ -161,8 +126,6 @@ class __LetterGridState extends State<LetterGrid> {
           highlight: highlighted ?? false,
           onFocus: () => onFocus(row, col),
           onAdvanceCursor: onAdvanceCursor,
-          // autoFocus: autoFocus,
-          // nextFocus: nextFocus,
           thisFocus: thisFocus,
         ),
       ),

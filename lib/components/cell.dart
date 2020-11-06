@@ -107,7 +107,6 @@ class _CellState extends State<Cell> {
       textAlign: TextAlign.center,
       style: TextStyle(color: Colors.black),
       onTap: widget.onFocus,
-      // autofocus: widget.autoFocus,
       focusNode: widget.thisFocus,
     );
 
