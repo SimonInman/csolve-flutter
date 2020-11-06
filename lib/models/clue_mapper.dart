@@ -13,7 +13,7 @@ class ClueMapper {
   final Map<Index, List<Clue>> map;
   ClueMapper({@required this.map}) : assert(map != null);
 
-  List<Clue> call(Cursor cursor) {
+  List<Clue> call(Index cursor) {
     final index = Index(cursor.row, cursor.column);
     if (map.containsKey(index)) {
       return map[index];

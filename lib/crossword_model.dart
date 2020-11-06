@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
 
+import 'models/cell_index.dart';
 import 'models/clue.dart';
 import 'models/clue_mapper.dart';
 import 'models/grid.dart';
@@ -124,6 +125,7 @@ class StaticCrossword extends StatefulWidget {
 
 class StaticCrosswordState extends State<StaticCrossword> {
   final StreamController<GridUpdate> streamController = new StreamController();
+  Clue currentClue;
 
   @override
   void initState() {
@@ -156,6 +158,31 @@ class StaticCrosswordState extends State<StaticCrossword> {
     );
   }
 
+  Clue _updateCurrentClue(Index focusedSquare) {
+    final clues = widget.mapper.call(focusedSquare);
+    if (clues.length == 1) {
+      return clues[0];
+    }
+    // If we already had the user focused on one clue, it means they want to
+    // switch to the other clue. Otherwise, arbitrarily return the first clue.
+    // ?? Is this going to work? not sure if focus triggers a second time.
+    if (clues.length == 2) {
+      if (currentClue == clues[0]) {
+        return clues[1];
+      } else {
+        return clues[0];
+      }
+    }
+    // Should never happen.
+    return null;
+  }
+
+  void onUpdateGridFocus(Index cursor) {
+    setState(() {
+      currentClue = _updateCurrentClue(cursor);
+    });
+  }
+
   Widget _build(BuildContext context, Grid grid) {
     List<Widget> clueWidgets = [
       _clueHeaders('Across'),
@@ -168,6 +195,10 @@ class StaticCrosswordState extends State<StaticCrossword> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // TODO: prettify this.
+          Text((currentClue == null)
+              ? ''
+              : '${currentClue.number}: ${currentClue.surface}'),
           _buildGridWidget(grid),
           Flexible(
             child: Column(
@@ -186,7 +217,8 @@ class StaticCrosswordState extends State<StaticCrossword> {
       height: grid.height,
       rows: grid.rows,
       streamController: streamController,
-      clueMap: widget.mapper.call,
+      currentClue: currentClue,
+      updateFocus: onUpdateGridFocus,
     );
   }
 
