@@ -33,14 +33,18 @@ class LetterGrid extends StatefulWidget {
   final void Function(Index) updateFocus;
 
   LetterGrid({
-    @required this.width,
-    @required this.height,
-    @required this.rows,
-    @required this.streamController,
+    @required width,
+    @required height,
+    @required rows,
+    @required streamController,
     @required this.currentClue,
-    @required this.updateFocus,
-    // @required this.focusedSquare,
-  }) : lightHighlights = currentClue?.span;
+    @required updateFocus,
+  })  : updateFocus = checkNotNull(updateFocus),
+        width = checkNotNull(width),
+        height = checkNotNull(height),
+        rows = checkNotNull(rows),
+        streamController = checkNotNull(streamController),
+        lightHighlights = currentClue?.span;
 
   @override
   State<StatefulWidget> createState() => __LetterGridState();
@@ -55,12 +59,18 @@ class __LetterGridState extends State<LetterGrid> {
   @override
   void initState() {
     nextFocusNode = new FocusNode();
-    // nextFocusIndex = widget.currentClue?.nextSquare(
-    //     Index(widget.focusedSquare.row, widget.focusedSquare.column));
     super.initState();
   }
 
+  @override
+  void didUpdateWidget(LetterGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    nextFocusIndex = widget.currentClue
+        ?.nextSquare(Index(focusedSquare.row, focusedSquare.column));
+  }
+
   void onFocus(int row, int column) {
+    focusedSquare = Index(row, column);
     widget.updateFocus(Index(row, column));
   }
 
