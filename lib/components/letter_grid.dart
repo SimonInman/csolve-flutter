@@ -53,44 +53,16 @@ class LetterGrid extends StatefulWidget {
 class __LetterGridState extends State<LetterGrid> {
   //TODO this should start blank
   Index focusedSquare = Index(0, 0);
-  Index nextFocusIndex;
-  FocusNode nextFocusNode;
-
-  @override
-  void initState() {
-    nextFocusNode = new FocusNode();
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(LetterGrid oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    nextFocusIndex = widget.currentClue
-        ?.nextSquare(Index(focusedSquare.row, focusedSquare.column));
-  }
 
   void onFocus(int row, int column) {
     focusedSquare = Index(row, column);
-    widget.updateFocus(Index(row, column));
+    widget.updateFocus(focusedSquare);
   }
 
   void onAdvanceCursor() {
     setState(() {
-      // probably this nextFocusIndex doesn't even need to be stateful any more?
-      // it can jjust be a local variable
-      if (nextFocusIndex != null) {
-        nextFocusNode.requestFocus();
-        focusedSquare = Index(nextFocusIndex.row, nextFocusIndex.column);
-        nextFocusIndex = widget.currentClue
-            .nextSquare(Index(nextFocusIndex.row, nextFocusIndex.column));
-      }
+      focusedSquare = widget.currentClue.nextSquare(focusedSquare);
     });
-  }
-
-  @override
-  void dispose() {
-    nextFocusNode.dispose();
-    super.dispose();
   }
 
   Widget build(BuildContext context) {
@@ -116,15 +88,7 @@ class __LetterGridState extends State<LetterGrid> {
     final cellModel = widget.rows[row][col];
 
     final highlighted = widget.lightHighlights?.contains(Index(row, col));
-
-    // When the user fills in the current square, we want to request focus on
-    // the next square. This requires handing our FocusNode to both the focused
-    // square and the next square.
-    // FocusNode nextFocus;
-    FocusNode thisFocus;
-    if (nextFocusIndex != null && nextFocusIndex.equal(row, col)) {
-      thisFocus = nextFocusNode;
-    }
+    final isFocused = focusedSquare.equal(row, col);
 
     return Focus(
       child: Builder(
@@ -136,7 +100,7 @@ class __LetterGridState extends State<LetterGrid> {
           highlight: highlighted ?? false,
           onFocus: () => onFocus(row, col),
           onAdvanceCursor: onAdvanceCursor,
-          thisFocus: thisFocus,
+          isFocused: isFocused,
         ),
       ),
     );

@@ -3,25 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class Cell extends StatefulWidget {
+  /// Clue number to be displayed in the cell.
+  ///
+  /// Null if not the start of a clue.
   final int number;
+
+  /// The current user-entered value in the cell.
   final Value value;
-  final Function(String) onChange;
+
+  /// Whether the cell should be highlighted.
   final bool highlight;
+
+  /// Callback when the user taps on a square.
   final Function() onFocus;
+
+  /// Called when the value of the square is changed.
+  final Function(String) onChange;
+
+  /// Callback when the user fills a square with an answer.
+  ///
+  /// The difference between this and onChange is that onAdvanceCursor is called
+  /// only when the square is filled. onChange can be called with a blank entry.
   final Function() onAdvanceCursor;
 
-  /// Should this square be focused on construction?
-  // final bool autoFocus;
-
-  /// Where the cursor should move next, if this cell is typed in.
-  ///
-  /// Will be null if this cell is not focused.
-  // final FocusNode nextFocus;
-
-  /// Focus for this cell, if it is next-in-line to be focused.
-  ///
-  /// Will be null if this cell is not next-in-line to be focused.
-  final FocusNode thisFocus;
+  /// Whether this cell should request focus.
+  final bool isFocused;
 
   Cell({
     Key key,
@@ -31,9 +37,7 @@ class Cell extends StatefulWidget {
     @required this.highlight,
     @required this.onFocus,
     @required this.onAdvanceCursor,
-    // @required this.autoFocus,
-    // this.nextFocus,
-    this.thisFocus,
+    @required this.isFocused,
   }) : super(key: key);
 
   @override
@@ -41,6 +45,14 @@ class Cell extends StatefulWidget {
 }
 
 class _CellState extends State<Cell> {
+  FocusNode focusNode;
+
+  @override
+  void initState() {
+    focusNode = new FocusNode();
+    super.initState();
+  }
+
   Widget build(BuildContext context) {
     if (!widget.value.open) {
       return Container(
@@ -54,11 +66,15 @@ class _CellState extends State<Cell> {
       text: widget.value.filled ? widget.value.value : null,
     );
     controller.selection = TextSelection(baseOffset: 0, extentOffset: 0);
-    final FocusNode focusNode = Focus.of(context);
-    final bool hasFocus = focusNode.hasFocus;
+
+    if (widget.isFocused) {
+      focusNode.requestFocus();
+    } else {
+      focusNode.unfocus();
+    }
 
     Color boxColour;
-    if (hasFocus) {
+    if (widget.isFocused) {
       boxColour = Colors.blue.shade700;
     } else if (widget.highlight) {
       boxColour = Colors.blue.shade100;
@@ -84,19 +100,12 @@ class _CellState extends State<Cell> {
       if (controller.text.isNotEmpty) {
         // ...but only advance cursor and remove focus from this node if there's
         // some content.
-        focusNode.unfocus();
         widget.onAdvanceCursor();
 
-        // TODO: The above has a few problems:
-        // 1) We get multiple cursors despite unfocusing.
-        // 2) For some reason, having either of unfocus/onAdvanceCursor breaks
-        //    the controller.value change. I can't really understand this -
-        //    perhaps the parent rebuilts "over" the update? But it breaks even
-        //    in a post-frame callback.
-        // 3) We are using two different focus nodes, so it's quite confusing.
-        //
-        // Realistically want to use another method - I think an
-        // OrderedTraversalGroup could potentially work.
+        // TODO: Calling onAdvanceCursor breaks the controller.value change, and
+        // the user doesn't see the value until the next network update.
+        // Presumably because the controller is not inn the State. Therefore
+        // make it part of the state.
       }
     };
 
@@ -107,7 +116,7 @@ class _CellState extends State<Cell> {
       textAlign: TextAlign.center,
       style: TextStyle(color: Colors.black),
       onTap: widget.onFocus,
-      focusNode: widget.thisFocus,
+      focusNode: focusNode,
     );
 
     final square = Container(
