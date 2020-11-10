@@ -59,9 +59,13 @@ class __LetterGridState extends State<LetterGrid> {
     widget.updateFocus(focusedSquare);
   }
 
+  /// If we're not at the end of the word, advance the cursor.
   void onAdvanceCursor() {
     setState(() {
-      focusedSquare = widget.currentClue.nextSquare(focusedSquare);
+      final nextSquare = widget.currentClue.nextSquare(focusedSquare);
+      if (nextSquare != null) {
+        focusedSquare = nextSquare;
+      }
     });
   }
 

@@ -46,10 +46,13 @@ class Cell extends StatefulWidget {
 
 class _CellState extends State<Cell> {
   FocusNode focusNode;
+  TextEditingController controller;
+  bool justUpdated = false;
 
   @override
   void initState() {
     focusNode = new FocusNode();
+    controller = new TextEditingController();
     super.initState();
   }
 
@@ -62,9 +65,16 @@ class _CellState extends State<Cell> {
       ));
     }
 
-    var controller = TextEditingController(
-      text: widget.value.filled ? widget.value.value : null,
-    );
+    if (!justUpdated) {
+      controller.text = widget.value.filled ? widget.value.value : null;
+    } else {
+      setState(() {
+        // Only keep the user entered letter for one rebuild - server is source
+        // of truth otherwise.
+        justUpdated = false;
+      });
+    }
+
     controller.selection = TextSelection(baseOffset: 0, extentOffset: 0);
 
     if (widget.isFocused) {
@@ -86,6 +96,8 @@ class _CellState extends State<Cell> {
     // - Get the latest value, and update the box so that it's only one
     //   upper-case letter (or blank).
     // - Send the update to the Stream with the remaining value.
+    // - Tell the State that we've just updated. Otherwise, when the cell is
+    // rebuilt immediately, the value will get overwritten by the server value.
     //
     // Using onChanged rather than the controller listener ensures we are only
     // notified about user changes here, and not our own network updates.
@@ -95,6 +107,11 @@ class _CellState extends State<Cell> {
         text: controller.text.isEmpty ? '' : controller.text[0].toUpperCase(),
         selection: TextSelection(baseOffset: 0, extentOffset: 0),
       );
+
+      setState(() {
+        justUpdated = true;
+      });
+
       // Update parent with state change...
       widget.onChange(controller.text);
       if (controller.text.isNotEmpty) {
