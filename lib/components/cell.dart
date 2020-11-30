@@ -60,7 +60,7 @@ class _CellState extends State<Cell> {
     if (!widget.value.open) {
       return Container(
           decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black, width: 0.5),
         color: Colors.black,
       ));
     }
@@ -134,6 +134,12 @@ class _CellState extends State<Cell> {
       style: TextStyle(color: Colors.black),
       onTap: widget.onFocus,
       focusNode: focusNode,
+      // Have to add some padding because the TextField doesn't center properly?
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.only(top: 2.0, left: 2.0),
+        isDense: true,
+      ),
     );
 
     final square = Container(
@@ -141,15 +147,19 @@ class _CellState extends State<Cell> {
         border: Border.all(color: Colors.black),
         color: boxColour,
       ),
-      child: Center(child: t),
+      child: t,
     );
 
     if (widget.number != null) {
       return Stack(children: [
-        square,
-        Text(
-          '${widget.number}',
-          style: TextStyle(fontSize: 11, color: Colors.black54),
+        // Without this fill, the bordered square shrinks for some reason...?
+        Positioned.fill(child: square),
+        Padding(
+          padding: const EdgeInsets.only(left: 2.0),
+          child: Text(
+            '${widget.number}',
+            style: TextStyle(fontSize: 9, color: Colors.black),
+          ),
         ),
       ]);
     } else {

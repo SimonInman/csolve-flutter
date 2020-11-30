@@ -135,9 +135,12 @@ class StaticCrosswordState extends State<StaticCrossword> {
   }
 
   Widget _clueHeaders(String acrossOrDown) {
-    return Text(
-      acrossOrDown,
-      style: TextStyle(fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Text(
+        acrossOrDown,
+        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -201,9 +204,12 @@ class StaticCrosswordState extends State<StaticCrossword> {
               : '${currentClue.number}: ${currentClue.surface}'),
           _buildGridWidget(grid),
           Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: clueWidgets,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: clueWidgets,
+              ),
             ),
           ),
         ],
