@@ -46,13 +46,16 @@ class Clue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final boldStyle = new TextStyle(fontWeight: FontWeight.bold);
-    return RichText(
-      text: new TextSpan(
-        style: new TextStyle(color: Colors.black),
-        children: <TextSpan>[
-          new TextSpan(text: '$number. ', style: boldStyle),
-          new TextSpan(text: surface)
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 3.0, bottom: 3.0),
+      child: RichText(
+        text: new TextSpan(
+          style: new TextStyle(color: Colors.black),
+          children: <TextSpan>[
+            new TextSpan(text: '$number. ', style: boldStyle),
+            new TextSpan(text: surface)
+          ],
+        ),
       ),
     );
   }
