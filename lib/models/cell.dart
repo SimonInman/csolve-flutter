@@ -5,9 +5,16 @@ class Value {
 
   Value({this.open, this.filled, this.value});
 
+  /// If value is filled, the values are stored in a map.
+  // value":{
+  //   "FilledChar":{
+  //   "value":"A",
+  //   "style":{"colour":{"red":0,"green":255,"blue":0},"pattern":"VerticalStripes"}
+  //   }
+  // }
   factory Value.fromJSON(json) {
     if (json is Map) {
-      final charValue = json["Char"]["value"];
+      final charValue = json["FilledChar"]["value"];
       return Value(open: true, filled: true, value: charValue);
     } else {
       if (json == "Closed") {
