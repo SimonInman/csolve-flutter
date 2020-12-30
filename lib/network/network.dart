@@ -68,7 +68,7 @@ String charToJson({
 }) {
   return charToSet.isEmpty
       ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
-      : '{"row":$rowIndex,"col":$colIndex,"value":{"Char":{"value":"$charToSet"}}}';
+      : '{"row":$rowIndex,"col":$colIndex,"value":{"FilledChar":{"value":"$charToSet"}}}';
 }
 
 void sendValueUpdate(
