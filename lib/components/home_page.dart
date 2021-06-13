@@ -8,8 +8,10 @@ const SOURCES = [
   'guardian-prize',
   'guardian-everyman',
   'independent',
+  'independent-on-sunday',
   'nyt',
   'new-yorker',
+  'private-eye',
 ];
 
 class HomePage extends StatefulWidget {
