@@ -13,11 +13,11 @@ import '../crossword_model.dart';
 const SITE_ADDR = 'https://csolve.herokuapp.com/';
 
 Future<Grid> fetchCrossword({
-  @required String crosswordPath,
-  @required String crosswordId,
+  required String crosswordPath,
+  required String crosswordId,
 }) async {
-  final addr = '$SITE_ADDR/solve/$crosswordPath/$crosswordId/the-everymen/get';
-  final response = await http.get(addr);
+  // final addr = '$SITE_ADDR/solve/$crosswordPath/$crosswordId/the-everymen/get';
+  final response = await http.get(Uri.https(SITE_ADDR, '/solve/$crosswordPath/$crosswordId/the-everymen/get'));
 
   if (response.statusCode == 200) {
     return Grid.fromJSON(json.decode(response.body));
@@ -27,14 +27,14 @@ Future<Grid> fetchCrossword({
 }
 
 Future<StaticCrossword> fetchCrosswordSkeleton({
-  @required String crosswordPath,
-  @required String crosswordId,
+  required String crosswordPath,
+  required String crosswordId,
 }) async {
   assert(crosswordId != null);
   assert(crosswordPath != null);
-  final addr = '$SITE_ADDR/crossword/$crosswordPath/$crosswordId';
+  final addr = '/crossword/$crosswordPath/$crosswordId';
 
-  final response = await http.get(addr);
+  final response = await http.get(Uri.https(SITE_ADDR, addr));
 
   if (response.statusCode == 200) {
     return StaticCrossword.fromJSON(
@@ -47,9 +47,9 @@ Future<StaticCrossword> fetchCrosswordSkeleton({
   }
 }
 
-Future<List<Suggestion>> fetchSuggestions({String crosswordPath}) async {
-  final addr = '$SITE_ADDR/suggestions/$crosswordPath';
-  final response = await http.get(addr);
+Future<List<Suggestion>?> fetchSuggestions({required String crosswordPath}) async {
+  final addr = '/suggestions/$crosswordPath';
+  final response = await http.get(Uri.https(SITE_ADDR, addr));
 
   if (response.statusCode == 200) {
     final list = json.decode(response.body);
@@ -62,9 +62,9 @@ Future<List<Suggestion>> fetchSuggestions({String crosswordPath}) async {
 }
 
 String charToJson({
-  @required int rowIndex,
-  @required int colIndex,
-  @required String charToSet,
+  required int rowIndex,
+  required int colIndex,
+  required String charToSet,
 }) {
   return charToSet.isEmpty
       ? '{"row":$rowIndex,"col":$colIndex,"value":"Open"}'
@@ -77,11 +77,11 @@ void sendValueUpdate(
   String crosswordId,
 ) {
   final addr =
-      'https://csolve.herokuapp.com/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
+      '/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
   final body = charToJson(
       rowIndex: update.row, colIndex: update.column, charToSet: update.value);
   http.post(
-    addr,
+    Uri.https(SITE_ADDR, addr),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },

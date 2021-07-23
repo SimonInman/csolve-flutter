@@ -11,15 +11,15 @@ class Clue extends StatelessWidget {
   final List<Index> span;
 
   Clue(
-      {@required this.number,
-      @required this.surface,
-      @required this.length,
-      @required this.answer,
-      @required this.position,
-      @required this.span});
+      {required this.number,
+      required this.surface,
+      required this.length,
+      required this.answer,
+      required this.position,
+      required this.span});
 
   /// Where should the cursor move after [index] is filled?
-  Index nextSquare(Index index) {
+  Index? nextSquare(Index index) {
     var last = span[0];
     for (final i in this.span.sublist(1)) {
       if (last == index) {

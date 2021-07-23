@@ -6,7 +6,7 @@ class Cell extends StatefulWidget {
   /// Clue number to be displayed in the cell.
   ///
   /// Null if not the start of a clue.
-  final int number;
+  final int? number;
 
   /// The current user-entered value in the cell.
   final Value value;
@@ -30,14 +30,14 @@ class Cell extends StatefulWidget {
   final bool isFocused;
 
   Cell({
-    Key key,
-    @required this.number,
-    @required this.value,
-    @required this.onChange,
-    @required this.highlight,
-    @required this.onFocus,
-    @required this.onAdvanceCursor,
-    @required this.isFocused,
+    Key? key,
+    required this.number,
+    required this.value,
+    required this.onChange,
+    required this.highlight,
+    required this.onFocus,
+    required this.onAdvanceCursor,
+    required this.isFocused,
   }) : super(key: key);
 
   @override
@@ -66,7 +66,7 @@ class _CellState extends State<Cell> {
     }
 
     if (!justUpdated) {
-      controller.text = widget.value.filled ? widget.value.value : null;
+      controller.text = widget.value.filled ? widget.value.value! : null;
     } else {
       setState(() {
         // Only keep the user entered letter for one rebuild - server is source

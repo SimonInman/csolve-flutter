@@ -21,12 +21,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String crosswordPath = 'independent';
-  String crosswordId;
+  String? crosswordId;
   // TODO this isn't actually used yet
   String solveGroup = 'the-everymen';
 
   Future<DropdownButton> buildButton() async {
-    final list = await fetchSuggestions(crosswordPath: crosswordPath);
+    final list = await (fetchSuggestions(crosswordPath: crosswordPath) as FutureOr<List<Suggestion>>);
     final dropdownItems = list
         .map((suggestion) => new DropdownMenuItem(
               value: suggestion.id,
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
       hint: Text('Select a crossword...'),
       value: crosswordId,
       items: dropdownItems,
-      onChanged: (String newValue) {
+      onChanged: (String? newValue) {
         setState(() {
           crosswordId = newValue;
         });
@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
       future: buildButton(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return snapshot.data;
+          return snapshot.data!;
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
@@ -70,9 +70,9 @@ class _HomePageState extends State<HomePage> {
       value: crosswordPath,
       items: dropdownItems,
       style: TextStyle(color: Colors.deepPurple),
-      onChanged: (String newValue) {
+      onChanged: (String? newValue) {
         setState(() {
-          crosswordPath = newValue;
+          crosswordPath = newValue!;
           crosswordId = null;
         });
       },
@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => CrosswordScreen(
-                    crosswordId: crosswordId,
+                    crosswordId: crosswordId!,
                     crosswordPath: crosswordPath,
                   )),
         );

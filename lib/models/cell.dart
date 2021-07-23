@@ -1,9 +1,9 @@
 class Value {
   final bool open;
   final bool filled;
-  final String value;
+  final String? value;
 
-  Value({this.open, this.filled, this.value});
+  Value({required this.open, required this.filled, this.value});
 
   /// If value is filled, the values are stored in a map.
   // value":{
@@ -29,10 +29,10 @@ class Value {
 }
 
 class CellModel {
-  final int number;
+  final int? number;
   final Value value;
 
-  CellModel({this.number, this.value});
+  CellModel({this.number, required this.value});
 
   factory CellModel.fromJSON(json) {
     return CellModel(

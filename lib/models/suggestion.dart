@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class Suggestion {
   final String id;
-  final String helpfulTag;
+  final String? helpfulTag;
 
   Suggestion({
-    @required this.id,
+    required this.id,
     this.helpfulTag,
   });
 
