@@ -33,12 +33,12 @@ class LetterGrid extends StatefulWidget {
   final void Function(Index) updateFocus;
 
   LetterGrid({
-    @required width,
-    @required height,
-    @required rows,
-    @required streamController,
-    @required this.currentClue,
-    @required updateFocus,
+    required width,
+    required height,
+    required rows,
+    required streamController,
+    required this.currentClue,
+    required updateFocus,
   })  : updateFocus = checkNotNull(updateFocus),
         width = checkNotNull(width),
         height = checkNotNull(height),

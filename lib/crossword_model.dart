@@ -23,9 +23,9 @@ class CrosswordScreen extends StatelessWidget {
   final String crosswordId;
 
   const CrosswordScreen({
-    Key key,
-    @required this.crosswordPath,
-    @required this.crosswordId,
+    Key? key,
+    required this.crosswordPath,
+    required this.crosswordId,
   })  : assert(crosswordId != null),
         assert(crosswordPath != null),
         super(key: key);
@@ -54,7 +54,7 @@ class CrosswordLoader extends StatelessWidget {
   final String crosswordId;
 
   const CrosswordLoader(
-      {Key key, @required this.crosswordPath, @required this.crosswordId})
+      {Key? key, required this.crosswordPath, required this.crosswordId})
       : assert(crosswordId != null),
         assert(crosswordPath != null),
         super(key: key);
@@ -67,7 +67,7 @@ class CrosswordLoader extends StatelessWidget {
         ),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return snapshot.data;
+            return snapshot.data!;
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
@@ -88,19 +88,19 @@ class StaticCrossword extends StatefulWidget {
   final String crosswordId;
 
   StaticCrossword({
-    Key key,
-    @required this.acrossClues,
-    @required this.downClues,
-    @required this.grid,
-    @required this.crosswordPath,
-    @required this.crosswordId,
+    Key? key,
+    required this.acrossClues,
+    required this.downClues,
+    required this.grid,
+    required this.crosswordPath,
+    required this.crosswordId,
   })  : mapper = ClueMapper.fromClues(acrossClues, downClues),
         super(key: key);
 
   factory StaticCrossword.fromJSON({
-    @required Map<String, dynamic> json,
-    @required String crosswordPath,
-    @required String crosswordId,
+    required Map<String, dynamic> json,
+    required String crosswordPath,
+    required String crosswordId,
   }) {
     final allClues = json["clues"];
     final aClues = allClues["across"];
@@ -125,7 +125,7 @@ class StaticCrossword extends StatefulWidget {
 
 class StaticCrosswordState extends State<StaticCrossword> {
   final StreamController<GridUpdate> streamController = new StreamController();
-  Clue currentClue;
+  Clue? currentClue;
 
   @override
   void initState() {
@@ -161,8 +161,8 @@ class StaticCrosswordState extends State<StaticCrossword> {
     );
   }
 
-  Clue _updateCurrentClue(Index focusedSquare) {
-    final clues = widget.mapper.call(focusedSquare);
+  Clue? _updateCurrentClue(Index focusedSquare) {
+    final clues = widget.mapper.call(focusedSquare)!;
     if (clues.length == 1) {
       return clues[0];
     }
@@ -201,7 +201,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
           // TODO: prettify this.
           Text((currentClue == null)
               ? ''
-              : '${currentClue.number}: ${currentClue.surface}'),
+              : '${currentClue!.number}: ${currentClue!.surface}'),
           _buildGridWidget(grid),
           Flexible(
             child: Padding(
@@ -223,7 +223,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
       height: grid.height,
       rows: grid.rows,
       streamController: streamController,
-      currentClue: currentClue,
+      currentClue: currentClue!,
       updateFocus: onUpdateGridFocus,
     );
   }
@@ -236,8 +236,8 @@ class StaticCrosswordState extends State<StaticCrossword> {
 }
 
 Stream<Grid> streamGrids({
-  @required String crosswordPath,
-  @required String crosswordId,
+  required String crosswordPath,
+  required String crosswordId,
 }) async* {
   yield await fetchCrossword(
     crosswordId: crosswordId,

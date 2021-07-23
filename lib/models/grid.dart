@@ -5,10 +5,10 @@ class Grid {
   final int height;
   final List<List<CellModel>> rows;
 
-  Grid({this.width, this.height, this.rows});
+  Grid({required this.width, required this.height, required this.rows});
 
-  static List<CellModel> _rowFromJSON(dynamic jsonIn) {
-    List<CellModel> parsed =
+  static List<CellModel>? _rowFromJSON(dynamic jsonIn) {
+    List<CellModel>? parsed =
         jsonIn.map<CellModel>((e) => CellModel.fromJSON(e)).toList();
     return parsed;
   }
@@ -16,7 +16,7 @@ class Grid {
   factory Grid.fromJSON(Map<String, dynamic> jsonIn) {
     final List<dynamic> cells = jsonIn['cells'];
 
-    final parsedRows = cells.map<List<CellModel>>(_rowFromJSON).toList();
+    final parsedRows = cells.map<List<CellModel>?>(_rowFromJSON).toList();
     return Grid(
       width: jsonIn['width'],
       height: jsonIn['height'],

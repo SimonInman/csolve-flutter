@@ -11,9 +11,9 @@ import 'clue.dart';
 /// clues. All open cells should be part of at least one clue.
 class ClueMapper {
   final Map<Index, List<Clue>> map;
-  ClueMapper({@required this.map}) : assert(map != null);
+  ClueMapper({required this.map}) : assert(map != null);
 
-  List<Clue> call(Index cursor) {
+  List<Clue>? call(Index cursor) {
     final index = Index(cursor.row, cursor.column);
     if (map.containsKey(index)) {
       return map[index];
