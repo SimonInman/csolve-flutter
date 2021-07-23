@@ -44,7 +44,7 @@ class LetterGrid extends StatefulWidget {
         height = checkNotNull(height),
         rows = checkNotNull(rows),
         streamController = checkNotNull(streamController),
-        lightHighlights = currentClue?.span;
+        lightHighlights = currentClue.span;
 
   @override
   State<StatefulWidget> createState() => __LetterGridState();
@@ -91,7 +91,7 @@ class __LetterGridState extends State<LetterGrid> {
     final col = i % widget.width;
     final cellModel = widget.rows[row][col];
 
-    final highlighted = widget.lightHighlights?.contains(Index(row, col));
+    final highlighted = widget.lightHighlights.contains(Index(row, col));
     final isFocused = focusedSquare.equal(row, col);
 
     return Focus(
@@ -101,7 +101,7 @@ class __LetterGridState extends State<LetterGrid> {
           value: cellModel.value,
           onChange: (string) =>
               widget.streamController.add(GridUpdate(row, col, string)),
-          highlight: highlighted ?? false,
+          highlight: highlighted,
           onFocus: () => onFocus(row, col),
           onAdvanceCursor: onAdvanceCursor,
           isFocused: isFocused,

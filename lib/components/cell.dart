@@ -45,8 +45,8 @@ class Cell extends StatefulWidget {
 }
 
 class _CellState extends State<Cell> {
-  FocusNode focusNode;
-  TextEditingController controller;
+  FocusNode focusNode = new FocusNode();
+  TextEditingController controller = new TextEditingController();
   bool justUpdated = false;
 
   @override
@@ -66,7 +66,7 @@ class _CellState extends State<Cell> {
     }
 
     if (!justUpdated) {
-      controller.text = widget.value.filled ? widget.value.value! : null;
+      controller.text = widget.value.filled ? widget.value.value! : '';
     } else {
       setState(() {
         // Only keep the user entered letter for one rebuild - server is source

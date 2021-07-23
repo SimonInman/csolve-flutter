@@ -7,16 +7,16 @@ class Grid {
 
   Grid({required this.width, required this.height, required this.rows});
 
-  static List<CellModel>? _rowFromJSON(dynamic jsonIn) {
+  static List<CellModel> _rowFromJSON(dynamic jsonIn) {
     List<CellModel>? parsed =
         jsonIn.map<CellModel>((e) => CellModel.fromJSON(e)).toList();
-    return parsed;
+    return parsed!;
   }
 
   factory Grid.fromJSON(Map<String, dynamic> jsonIn) {
     final List<dynamic> cells = jsonIn['cells'];
 
-    final parsedRows = cells.map<List<CellModel>?>(_rowFromJSON).toList();
+    final parsedRows = cells.map<List<CellModel>>(_rowFromJSON).toList();
     return Grid(
       width: jsonIn['width'],
       height: jsonIn['height'],

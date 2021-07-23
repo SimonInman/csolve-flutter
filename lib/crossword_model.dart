@@ -152,7 +152,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
       ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return _build(context, snapshot.data);
+          return _build(context, snapshot.data as Grid);
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }

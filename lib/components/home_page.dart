@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:csolve/crossword_model.dart';
+import 'package:csolve/models/suggestion.dart';
 import 'package:csolve/network/network.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +29,8 @@ class _HomePageState extends State<HomePage> {
   String solveGroup = 'the-everymen';
 
   Future<DropdownButton> buildButton() async {
-    final list = await (fetchSuggestions(crosswordPath: crosswordPath) as FutureOr<List<Suggestion>>);
+    final list = await (fetchSuggestions(crosswordPath: crosswordPath)
+        as FutureOr<List<Suggestion>>);
     final dropdownItems = list
         .map((suggestion) => new DropdownMenuItem(
               value: suggestion.id,
