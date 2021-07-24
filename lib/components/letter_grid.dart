@@ -8,6 +8,10 @@ import 'package:flutter/widgets.dart';
 import 'package:quiver/check.dart';
 import 'cell.dart';
 
+// You don't want the grid to get too big, because it's a square, and shouldn't
+// fill the screen.
+final maxGridWidth = 600.0;
+
 /// A user update to a cell in the grid.
 class GridUpdate {
   final int row;
@@ -70,19 +74,22 @@ class __LetterGridState extends State<LetterGrid> {
   }
 
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-            color: Colors.white30,
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: widget.width * widget.height,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: widget.width),
-              itemBuilder: _cellBuilder,
-            )),
-      ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxGridWidth),
+      child: Column(
+        children: [
+          Container(
+              color: Colors.white30,
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: widget.width * widget.height,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: widget.width),
+                itemBuilder: _cellBuilder,
+              )),
+        ],
+      ),
     );
   }
 

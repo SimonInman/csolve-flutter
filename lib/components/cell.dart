@@ -126,7 +126,7 @@ class _CellState extends State<Cell> {
       }
     };
 
-    final t = TextField(
+    final cellTextField = TextField(
       autocorrect: false,
       controller: controller,
       onChanged: userChanged,
@@ -147,7 +147,12 @@ class _CellState extends State<Cell> {
         border: Border.all(color: Colors.black),
         color: boxColour,
       ),
-      child: t,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          cellTextField,
+        ],
+      ),
     );
 
     if (widget.number != null) {
