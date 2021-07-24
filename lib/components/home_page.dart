@@ -29,10 +29,10 @@ class _HomePageState extends State<HomePage> {
   String solveGroup = 'the-everymen';
 
   Future<DropdownButton> buildButton() async {
-    final list = await (fetchSuggestions(crosswordPath: crosswordPath)
-        as FutureOr<List<Suggestion>>);
+    final list = await fetchSuggestions(crosswordPath: crosswordPath);
+
     final dropdownItems = list
-        .map((suggestion) => new DropdownMenuItem(
+        .map((Suggestion suggestion) => new DropdownMenuItem(
               value: suggestion.id,
               child: new Text(suggestion.prettyPrint()),
             ))

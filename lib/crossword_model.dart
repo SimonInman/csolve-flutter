@@ -223,7 +223,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
       height: grid.height,
       rows: grid.rows,
       streamController: streamController,
-      currentClue: currentClue!,
+      currentClue: currentClue,
       updateFocus: onUpdateGridFocus,
     );
   }

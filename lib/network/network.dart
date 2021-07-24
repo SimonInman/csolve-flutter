@@ -16,8 +16,8 @@ Future<Grid> fetchCrossword({
   required String crosswordPath,
   required String crosswordId,
 }) async {
-  // final addr = '$SITE_ADDR/solve/$crosswordPath/$crosswordId/the-everymen/get';
-  final response = await http.get(Uri.https(SITE_ADDR, '/solve/$crosswordPath/$crosswordId/the-everymen/get'));
+  final addr = '$SITE_ADDR/solve/$crosswordPath/$crosswordId/the-everymen/get';
+  final response = await http.get(Uri.parse(addr));
 
   if (response.statusCode == 200) {
     return Grid.fromJSON(json.decode(response.body));
@@ -32,9 +32,9 @@ Future<StaticCrossword> fetchCrosswordSkeleton({
 }) async {
   assert(crosswordId != null);
   assert(crosswordPath != null);
-  final addr = '/crossword/$crosswordPath/$crosswordId';
+  final addr = '$SITE_ADDR/crossword/$crosswordPath/$crosswordId';
 
-  final response = await http.get(Uri.https(SITE_ADDR, addr));
+  final response = await http.get(Uri.parse(addr));
 
   if (response.statusCode == 200) {
     return StaticCrossword.fromJSON(
@@ -47,9 +47,10 @@ Future<StaticCrossword> fetchCrosswordSkeleton({
   }
 }
 
-Future<List<Suggestion>?> fetchSuggestions({required String crosswordPath}) async {
-  final addr = '/suggestions/$crosswordPath';
-  final response = await http.get(Uri.https(SITE_ADDR, addr));
+Future<List<Suggestion>> fetchSuggestions(
+    {required String crosswordPath}) async {
+  final addr = '$SITE_ADDR/suggestions/$crosswordPath';
+  final response = await http.get(Uri.parse(addr));
 
   if (response.statusCode == 200) {
     final list = json.decode(response.body);
@@ -77,11 +78,11 @@ void sendValueUpdate(
   String crosswordId,
 ) {
   final addr =
-      '/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
+      '$SITE_ADDR/solve/$crosswordPath/$crosswordId/the-everymen/set_cell';
   final body = charToJson(
       rowIndex: update.row, colIndex: update.column, charToSet: update.value);
   http.post(
-    Uri.https(SITE_ADDR, addr),
+    Uri.parse(addr),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },

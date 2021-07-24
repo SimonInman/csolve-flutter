@@ -26,7 +26,7 @@ class LetterGrid extends StatefulWidget {
   final int height;
   final List<List<CellModel>> rows;
   final StreamController<GridUpdate> streamController;
-  final Clue currentClue;
+  final Clue? currentClue;
   List<Index> lightHighlights;
 
   // Callback when the user clicks on a square.
@@ -44,7 +44,7 @@ class LetterGrid extends StatefulWidget {
         height = checkNotNull(height),
         rows = checkNotNull(rows),
         streamController = checkNotNull(streamController),
-        lightHighlights = currentClue.span;
+        lightHighlights = currentClue?.span ?? [];
 
   @override
   State<StatefulWidget> createState() => __LetterGridState();
@@ -62,7 +62,7 @@ class __LetterGridState extends State<LetterGrid> {
   /// If we're not at the end of the word, advance the cursor.
   void onAdvanceCursor() {
     setState(() {
-      final nextSquare = widget.currentClue.nextSquare(focusedSquare);
+      final nextSquare = widget.currentClue?.nextSquare(focusedSquare);
       if (nextSquare != null) {
         focusedSquare = nextSquare;
       }
