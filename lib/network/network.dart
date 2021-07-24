@@ -30,8 +30,6 @@ Future<StaticCrossword> fetchCrosswordSkeleton({
   required String crosswordPath,
   required String crosswordId,
 }) async {
-  assert(crosswordId != null);
-  assert(crosswordPath != null);
   final addr = '$SITE_ADDR/crossword/$crosswordPath/$crosswordId';
 
   final response = await http.get(Uri.parse(addr));
