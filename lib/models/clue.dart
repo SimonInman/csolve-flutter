@@ -6,7 +6,9 @@ class Clue extends StatelessWidget {
   final int number;
   final String surface;
   final int length;
-  final String answer;
+  // Answer not present for some puzzles as they are not neccesarily published
+  // by sites. Follow on clues also do not have answers.
+  final String? answer;
   final Index position;
   final List<Index> span;
 
