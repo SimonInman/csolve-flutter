@@ -11,6 +11,14 @@ import 'network/network.dart';
 
 const CROSSWORD = 'guardian-cryptic/28259';
 
+const clueColumnMinSize = 360;
+final minSizeForWide = maxGridWidth + 2 * clueColumnMinSize;
+
+const _wideViewPadding = 10.0;
+const _clueSidePadding = 8.0;
+final clueSidePadding =
+    const EdgeInsets.only(left: _clueSidePadding, right: _clueSidePadding);
+
 // TODO new function:
 // scroll to currently selected clue
 // Display current clue across top?
@@ -187,35 +195,65 @@ class StaticCrosswordState extends State<StaticCrossword> {
   }
 
   Widget _build(BuildContext context, Grid grid) {
+    return MediaQuery.of(context).size.width > minSizeForWide
+        ? _wideLayout(context, grid)
+        : _verticalLayout(context, grid);
+  }
+
+  Widget _verticalLayout(BuildContext context, Grid grid) {
     List<Widget> clueWidgets = [
       _clueHeaders('Across'),
       ...widget.acrossClues,
       _clueHeaders('Down'),
       ...widget.downClues
     ];
-
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // TODO: prettify this.
-          Text((currentClue == null)
-              ? ''
-              : '${currentClue!.number}: ${currentClue!.surface}'),
+          _maybeSelectedClue(),
           _buildGridWidget(grid),
-          Flexible(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: clueWidgets,
-              ),
-            ),
-          ),
+          _clueColumn(clueWidgets),
         ],
       ),
     );
   }
+
+  Widget _wideLayout(BuildContext context, Grid grid) {
+    return Column(
+      children: [
+        _maybeSelectedClue(),
+        Padding(
+          padding: const EdgeInsets.all(_wideViewPadding),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildGridWidget(grid),
+              _clueColumn([_clueHeaders('Across'), ...widget.acrossClues]),
+              _clueColumn([_clueHeaders('Down'), ...widget.downClues]),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _clueColumn(List<Widget> headersAndClues) {
+    return Flexible(
+      child: Padding(
+        padding: clueSidePadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: headersAndClues,
+        ),
+      ),
+    );
+  }
+
+  Widget _maybeSelectedClue() => Text((currentClue == null)
+      ? ''
+      : '${currentClue!.number}: ${currentClue!.surface}');
 
   Widget _buildGridWidget(Grid grid) {
     return LetterGrid(
