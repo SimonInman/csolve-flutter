@@ -37,18 +37,13 @@ class LetterGrid extends StatefulWidget {
   final void Function(Index) updateFocus;
 
   LetterGrid({
-    required width,
-    required height,
-    required rows,
-    required streamController,
+    required this.width,
+    required this.height,
+    required this.rows,
+    required this.streamController,
     required this.currentClue,
-    required updateFocus,
-  })  : updateFocus = checkNotNull(updateFocus),
-        width = checkNotNull(width),
-        height = checkNotNull(height),
-        rows = checkNotNull(rows),
-        streamController = checkNotNull(streamController),
-        lightHighlights = currentClue?.span ?? [];
+    required this.updateFocus,
+  }) : lightHighlights = currentClue?.span ?? [];
 
   @override
   State<StatefulWidget> createState() => __LetterGridState();
@@ -104,8 +99,7 @@ class __LetterGridState extends State<LetterGrid> {
     return Focus(
       child: Builder(
         builder: (BuildContext context) => Cell(
-          number: cellModel.number,
-          value: cellModel.value,
+          model: cellModel,
           onChange: (string) =>
               widget.streamController.add(GridUpdate(row, col, string)),
           highlight: highlighted,

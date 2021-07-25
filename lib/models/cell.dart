@@ -31,13 +31,25 @@ class Value {
 class CellModel {
   final int? number;
   final Value value;
+  final bool isAcrossWordEnd;
+  final bool isDownWordEnd;
 
-  CellModel({this.number, required this.value});
+  CellModel({
+    this.number,
+    required this.value,
+    required this.isAcrossWordEnd,
+    required this.isDownWordEnd,
+  });
 
   factory CellModel.fromJSON(json) {
     return CellModel(
       number: json["number"],
       value: Value.fromJSON(json["value"]),
+      // TODO: The value of this field is actually a string indicating "space",
+      // "hyphen", etc. We treat them all the same at the moment, but could
+      // render hyphens in future.
+      isAcrossWordEnd: (json["across_word_end"] != null),
+      isDownWordEnd: (json["down_word_end"] != null),
     );
   }
 }

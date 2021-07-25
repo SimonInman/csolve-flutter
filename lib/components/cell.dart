@@ -2,14 +2,13 @@ import 'package:csolve/models/cell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class Cell extends StatefulWidget {
-  /// Clue number to be displayed in the cell.
-  ///
-  /// Null if not the start of a clue.
-  final int? number;
+final normalBorder = BorderSide(color: Colors.black, width: 1.0);
+final thickBorder = BorderSide(color: Colors.black, width: 2.5);
 
-  /// The current user-entered value in the cell.
-  final Value value;
+class Cell extends StatefulWidget {
+  /// Model continaing the value of the cell, number (if any), and whether this
+  /// cell is the end of a word.
+  final CellModel model;
 
   /// Whether the cell should be highlighted.
   final bool highlight;
@@ -31,8 +30,7 @@ class Cell extends StatefulWidget {
 
   Cell({
     Key? key,
-    required this.number,
-    required this.value,
+    required this.model,
     required this.onChange,
     required this.highlight,
     required this.onFocus,
@@ -57,7 +55,7 @@ class _CellState extends State<Cell> {
   }
 
   Widget build(BuildContext context) {
-    if (!widget.value.open) {
+    if (!widget.model.value.open) {
       return Container(
           decoration: BoxDecoration(
         border: Border.all(color: Colors.black, width: 0.5),
@@ -66,7 +64,8 @@ class _CellState extends State<Cell> {
     }
 
     if (!justUpdated) {
-      controller.text = widget.value.filled ? widget.value.value! : '';
+      controller.text =
+          widget.model.value.filled ? widget.model.value.value! : '';
     } else {
       setState(() {
         // Only keep the user entered letter for one rebuild - server is source
@@ -128,7 +127,7 @@ class _CellState extends State<Cell> {
       ),
     );
 
-    if (widget.number == null) {
+    if (widget.model.number == null) {
       return _buildCell(cellTextField, boxColour);
     }
 
@@ -138,7 +137,7 @@ class _CellState extends State<Cell> {
       Padding(
         padding: const EdgeInsets.only(left: 2.0),
         child: Text(
-          '${widget.number}',
+          '${widget.model.number}',
           style: TextStyle(fontSize: 9, color: Colors.black),
         ),
       ),
@@ -148,7 +147,7 @@ class _CellState extends State<Cell> {
   Widget _buildCell(TextField cellTextField, Color boxColour) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: _boxBorder(),
         color: boxColour,
       ),
       child: Column(
@@ -168,6 +167,15 @@ class _CellState extends State<Cell> {
     } else {
       return Colors.white;
     }
+  }
+
+  Border _boxBorder() {
+    return Border(
+      left: normalBorder,
+      top: normalBorder,
+      right: widget.model.isAcrossWordEnd ? thickBorder : normalBorder,
+      bottom: widget.model.isDownWordEnd ? thickBorder : normalBorder,
+    );
   }
 
   void _cutControllerToMaxOneLetter() {
