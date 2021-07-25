@@ -75,7 +75,9 @@ class _CellState extends State<Cell> {
       });
     }
 
-    controller.selection = TextSelection(baseOffset: 0, extentOffset: 0);
+    // Set cursor at end of current text.
+    controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length));
 
     if (widget.isFocused) {
       focusNode.requestFocus();
@@ -170,9 +172,12 @@ class _CellState extends State<Cell> {
 
   void _cutControllerToMaxOneLetter() {
     controller.value = controller.value.copyWith(
-      // any nicer null syntax i can use here?
-      text: controller.text.isEmpty ? '' : controller.text[0].toUpperCase(),
-      selection: TextSelection(baseOffset: 0, extentOffset: 0),
+      text: controller.text.isEmpty
+          ? ''
+          : controller.text[controller.text.length - 1].toUpperCase(),
     );
+    // Set cursor at end of current text.
+    controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length));
   }
 }
