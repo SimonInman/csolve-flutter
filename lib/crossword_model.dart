@@ -63,9 +63,7 @@ class CrosswordLoader extends StatelessWidget {
 
   const CrosswordLoader(
       {Key? key, required this.crosswordPath, required this.crosswordId})
-      : assert(crosswordId != null),
-        assert(crosswordPath != null),
-        super(key: key);
+      : super(key: key);
 
   Widget build(BuildContext context) {
     return FutureBuilder<StaticCrossword>(
