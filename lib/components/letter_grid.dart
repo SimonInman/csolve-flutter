@@ -10,7 +10,7 @@ import 'cell.dart';
 
 // You don't want the grid to get too big, because it's a square, and shouldn't
 // fill the screen.
-final maxGridWidth = 600.0;
+const maxGridWidth = 600.0;
 
 /// A user update to a cell in the grid.
 class GridUpdate {

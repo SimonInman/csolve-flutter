@@ -83,14 +83,7 @@ class _CellState extends State<Cell> {
       focusNode.unfocus();
     }
 
-    Color boxColour;
-    if (widget.isFocused) {
-      boxColour = Colors.blue.shade700;
-    } else if (widget.highlight) {
-      boxColour = Colors.blue.shade100;
-    } else {
-      boxColour = Colors.white;
-    }
+    final boxColour = _boxColour();
 
     // onChanged we want to :
     // - Get the latest value, and update the box so that it's only one
@@ -101,12 +94,8 @@ class _CellState extends State<Cell> {
     //
     // Using onChanged rather than the controller listener ensures we are only
     // notified about user changes here, and not our own network updates.
-    final userChanged = (String value) {
-      controller.value = controller.value.copyWith(
-        // any nicer null syntax i can use here?
-        text: controller.text.isEmpty ? '' : controller.text[0].toUpperCase(),
-        selection: TextSelection(baseOffset: 0, extentOffset: 0),
-      );
+    final onUserChange = (String value) {
+      _cutControllerToMaxOneLetter();
 
       setState(() {
         justUpdated = true;
@@ -114,22 +103,17 @@ class _CellState extends State<Cell> {
 
       // Update parent with state change...
       widget.onChange(controller.text);
+      // ...but only advance cursor and remove focus from this node if there's
+      // some content.
       if (controller.text.isNotEmpty) {
-        // ...but only advance cursor and remove focus from this node if there's
-        // some content.
         widget.onAdvanceCursor();
-
-        // TODO: Calling onAdvanceCursor breaks the controller.value change, and
-        // the user doesn't see the value until the next network update.
-        // Presumably because the controller is not inn the State. Therefore
-        // make it part of the state.
       }
     };
 
     final cellTextField = TextField(
       autocorrect: false,
       controller: controller,
-      onChanged: userChanged,
+      onChanged: onUserChange,
       textAlign: TextAlign.center,
       style: TextStyle(color: Colors.black),
       onTap: widget.onFocus,
@@ -142,7 +126,25 @@ class _CellState extends State<Cell> {
       ),
     );
 
-    final square = Container(
+    if (widget.number == null) {
+      return _buildCell(cellTextField, boxColour);
+    }
+
+    return Stack(children: [
+      // Without this fill, the bordered square shrinks for some reason...?
+      Positioned.fill(child: _buildCell(cellTextField, boxColour)),
+      Padding(
+        padding: const EdgeInsets.only(left: 2.0),
+        child: Text(
+          '${widget.number}',
+          style: TextStyle(fontSize: 9, color: Colors.black),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildCell(TextField cellTextField, Color boxColour) {
+    return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
         color: boxColour,
@@ -154,21 +156,23 @@ class _CellState extends State<Cell> {
         ],
       ),
     );
+  }
 
-    if (widget.number != null) {
-      return Stack(children: [
-        // Without this fill, the bordered square shrinks for some reason...?
-        Positioned.fill(child: square),
-        Padding(
-          padding: const EdgeInsets.only(left: 2.0),
-          child: Text(
-            '${widget.number}',
-            style: TextStyle(fontSize: 9, color: Colors.black),
-          ),
-        ),
-      ]);
+  Color _boxColour() {
+    if (widget.isFocused) {
+      return Colors.blue.shade700;
+    } else if (widget.highlight) {
+      return Colors.blue.shade100;
     } else {
-      return square;
+      return Colors.white;
     }
+  }
+
+  void _cutControllerToMaxOneLetter() {
+    controller.value = controller.value.copyWith(
+      // any nicer null syntax i can use here?
+      text: controller.text.isEmpty ? '' : controller.text[0].toUpperCase(),
+      selection: TextSelection(baseOffset: 0, extentOffset: 0),
+    );
   }
 }
