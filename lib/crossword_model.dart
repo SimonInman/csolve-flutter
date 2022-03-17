@@ -131,7 +131,9 @@ class StaticCrossword extends StatefulWidget {
 
 class StaticCrosswordState extends State<StaticCrossword> {
   final StreamController<GridUpdate> streamController = new StreamController();
-  Clue? currentClue;
+  Clue? currentClueGrid1;
+  Clue? currentClueGrid2;
+  int currentFocusedGrid = 1;
 
   @override
   void initState() {
@@ -151,6 +153,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
   }
 
   Widget build(BuildContext context) {
+    return _build(context, widget.grid);
     return StreamBuilder(
       stream: streamGrids(
         crosswordId: widget.crosswordId,
@@ -167,7 +170,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
     );
   }
 
-  Clue? _updateCurrentClue(Index focusedSquare) {
+  Clue? _updateCurrentClueGrid1(Index focusedSquare) {
     final clues = widget.mapper.call(focusedSquare)!;
     if (clues.length == 1) {
       return clues[0];
@@ -176,7 +179,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
     // switch to the other clue. Otherwise, arbitrarily return the first clue.
     // ?? Is this going to work? not sure if focus triggers a second time.
     if (clues.length == 2) {
-      if (currentClue == clues[0]) {
+      if (currentClueGrid1 == clues[0]) {
         return clues[1];
       } else {
         return clues[0];
@@ -186,9 +189,62 @@ class StaticCrosswordState extends State<StaticCrossword> {
     return null;
   }
 
-  void onUpdateGridFocus(Index cursor) {
+  Clue? _updateCurrentClueGrid2(Index focusedSquare) {
+    final clues = widget.mapper.call(focusedSquare)!;
+    if (clues.length == 1) {
+      return clues[0];
+    }
+    // If we already had the user focused on one clue, it means they want to
+    // switch to the other clue. Otherwise, arbitrarily return the first clue.
+    // ?? Is this going to work? not sure if focus triggers a second time.
+    if (clues.length == 2) {
+      if (currentClueGrid2 == clues[0]) {
+        return clues[1];
+      } else {
+        return clues[0];
+      }
+    }
+    // Should never happen.
+    return null;
+  }
+
+
+  // Clue? _updateCurrentClue(Index focusedSquare) {
+  //   final clues = widget.mapper.call(focusedSquare)!;
+  //   if (clues.length == 1) {
+  //     return clues[0];
+  //   }
+  //   // If we already had the user focused on one clue, it means they want to
+  //   // switch to the other clue. Otherwise, arbitrarily return the first clue.
+  //   // ?? Is this going to work? not sure if focus triggers a second time.
+  //   if (clues.length == 2) {
+  //     if (currentClue == clues[0]) {
+  //       return clues[1];
+  //     } else {
+  //       return clues[0];
+  //     }
+  //   }
+  //   // Should never happen.
+  //   return null;
+  // }
+
+  // void onUpdateGridFocus(Index cursor) {
+  //   setState(() {
+  //     currentClueG = _updateCurrentClue(cursor);
+  //   });
+  // }
+
+  void onUpdateGrid1Focus(Index cursor) {
     setState(() {
-      currentClue = _updateCurrentClue(cursor);
+      currentClueGrid1 = _updateCurrentClueGrid1(cursor);
+      currentFocusedGrid = 1;
+    });
+  }
+
+  void onUpdateGrid2Focus(Index cursor) {
+    setState(() {
+      currentClueGrid2 = _updateCurrentClueGrid2(cursor);
+      currentFocusedGrid = 2;
     });
   }
 
@@ -209,8 +265,8 @@ class StaticCrosswordState extends State<StaticCrossword> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _maybeSelectedClue(),
-          _buildGridWidget(grid),
+          // _maybeSelectedClue(),
+          _buildGridWidget(grid, 1),
           _clueColumn(clueWidgets),
         ],
       ),
@@ -220,16 +276,28 @@ class StaticCrosswordState extends State<StaticCrossword> {
   Widget _wideLayout(BuildContext context, Grid grid) {
     return Column(
       children: [
-        _maybeSelectedClue(),
+        // _maybeSelectedClue(),
         Padding(
           padding: const EdgeInsets.all(_wideViewPadding),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildGridWidget(grid),
-              _clueColumn([_clueHeaders('Across'), ...widget.acrossClues]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildGridWidget(grid, 1 ),
+              _buildGridWidget(grid, 2),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _clueColumn([_clueHeaders('Across'), ...widget.acrossClues]),
               _clueColumn([_clueHeaders('Down'), ...widget.downClues]),
+                ],
+              ),
             ],
           ),
         ),
@@ -249,18 +317,22 @@ class StaticCrosswordState extends State<StaticCrossword> {
     );
   }
 
-  Widget _maybeSelectedClue() => Text((currentClue == null)
-      ? ''
-      : '${currentClue!.number}: ${currentClue!.surface}');
+  // Widget _maybeSelectedClue() => Text((currentClue == null)
+  //     ? ''
+  //     : '${currentClue!.number}: ${currentClue!.surface}');
 
-  Widget _buildGridWidget(Grid grid) {
+  Widget _buildGridWidget(Grid grid, int gridNumber) {
+    final thisGridFocused = gridNumber == currentFocusedGrid;
+    final focusUpdate = gridNumber == 1 ? onUpdateGrid1Focus : onUpdateGrid2Focus;
+    final currentClue = gridNumber == 1 ? currentClueGrid1 : currentClueGrid2;
     return LetterGrid(
       width: grid.width,
       height: grid.height,
       rows: grid.rows,
       streamController: streamController,
       currentClue: currentClue,
-      updateFocus: onUpdateGridFocus,
+      updateFocus: focusUpdate,
+      thisGridFocused: thisGridFocused,
     );
   }
 

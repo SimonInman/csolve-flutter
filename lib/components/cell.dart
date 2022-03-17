@@ -63,16 +63,16 @@ class _CellState extends State<Cell> {
       ));
     }
 
-    if (!justUpdated) {
-      controller.text =
-          widget.model.value.filled ? widget.model.value.value! : '';
-    } else {
-      setState(() {
-        // Only keep the user entered letter for one rebuild - server is source
-        // of truth otherwise.
-        justUpdated = false;
-      });
-    }
+    // if (!justUpdated) {
+    //   controller.text =
+    //       widget.model.value.filled ? widget.model.value.value! : '';
+    // } else {
+    //   setState(() {
+    //     // Only keep the user entered letter for one rebuild - server is source
+    //     // of truth otherwise.
+    //     justUpdated = false;
+    //   });
+    // }
 
     // Set cursor at end of current text.
     controller.selection = TextSelection.fromPosition(

@@ -29,8 +29,9 @@ class LetterGrid extends StatefulWidget {
   final int width;
   final int height;
   final List<List<CellModel>> rows;
-  final StreamController<GridUpdate> streamController;
+  final StreamController<GridUpdate>? streamController;
   final Clue? currentClue;
+  final bool thisGridFocused;
   List<Index> lightHighlights;
 
   // Callback when the user clicks on a square.
@@ -43,6 +44,7 @@ class LetterGrid extends StatefulWidget {
     required this.streamController,
     required this.currentClue,
     required this.updateFocus,
+    required this.thisGridFocused,
   }) : lightHighlights = currentClue?.span ?? [];
 
   @override
@@ -94,14 +96,14 @@ class __LetterGridState extends State<LetterGrid> {
     final cellModel = widget.rows[row][col];
 
     final highlighted = widget.lightHighlights.contains(Index(row, col));
-    final isFocused = focusedSquare.equal(row, col);
+    final isFocused = widget.thisGridFocused && focusedSquare.equal(row, col);
 
     return Focus(
       child: Builder(
         builder: (BuildContext context) => Cell(
           model: cellModel,
-          onChange: (string) =>
-              widget.streamController.add(GridUpdate(row, col, string)),
+          onChange: (string) {},
+              // widget.streamController.add(GridUpdate(row, col, string)),
           highlight: highlighted,
           onFocus: () => onFocus(row, col),
           onAdvanceCursor: onAdvanceCursor,
