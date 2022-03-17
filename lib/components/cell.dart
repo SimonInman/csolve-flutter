@@ -116,7 +116,7 @@ class _CellState extends State<Cell> {
       controller: controller,
       onChanged: onUserChange,
       textAlign: TextAlign.center,
-      style: TextStyle(color: Colors.black),
+      style: TextStyle(fontSize: 44, color: Colors.black),
       onTap: widget.onFocus,
       focusNode: focusNode,
       // Have to add some padding because the TextField doesn't center properly?
