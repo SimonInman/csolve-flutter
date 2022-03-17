@@ -33,9 +33,13 @@ class LetterGrid extends StatefulWidget {
   final Clue? currentClue;
   final bool thisGridFocused;
   List<Index> lightHighlights;
+  /// Called when the value of the square is changed.
+  final Function(int, int, String) onChange;
 
   // Callback when the user clicks on a square.
   final void Function(Index) updateFocus;
+
+  final bool allCorrect;
 
   LetterGrid({
     required this.width,
@@ -44,7 +48,9 @@ class LetterGrid extends StatefulWidget {
     required this.streamController,
     required this.currentClue,
     required this.updateFocus,
-    required this.thisGridFocused,
+    required this.thisGridFocused, 
+    required this.onChange,
+    required this.allCorrect,
   }) : lightHighlights = currentClue?.span ?? [];
 
   @override
@@ -54,6 +60,7 @@ class LetterGrid extends StatefulWidget {
 class __LetterGridState extends State<LetterGrid> {
   //TODO this should start blank
   Index focusedSquare = Index(0, 0);
+  int currentCorrectCount = 0;
 
   void onFocus(int row, int column) {
     focusedSquare = Index(row, column);
@@ -102,12 +109,13 @@ class __LetterGridState extends State<LetterGrid> {
       child: Builder(
         builder: (BuildContext context) => Cell(
           model: cellModel,
-          onChange: (string) {},
+          onChange: (string) => widget.onChange(row, col, string),
               // widget.streamController.add(GridUpdate(row, col, string)),
           highlight: highlighted,
           onFocus: () => onFocus(row, col),
           onAdvanceCursor: onAdvanceCursor,
           isFocused: isFocused,
+          puzzleCompleted: widget.allCorrect,
         ),
       ),
     );

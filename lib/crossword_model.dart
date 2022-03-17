@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:csolve/components/letter_grid.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
+
 
 import 'models/cell_index.dart';
 import 'models/clue.dart';
@@ -129,15 +131,58 @@ class StaticCrossword extends StatefulWidget {
   }
 }
 
+class GivenAnswers {
+  final List<Clue> acrossClues;
+  final List<Clue> downClues;
+  // final List<List<String>> acrossAnswers;
+  // final List<List<String>> downAnswers;
+  final List<List<String>> answers;
+
+  GivenAnswers(this.acrossClues, this.downClues) : 
+
+  answers = [_blankClue(), _blankClue(), _blankClue(), _blankClue(), _blankClue()] ;
+
+void updateAnswer(int row, int col, String answer) {
+  print('updating answer');
+  assert(answer.isEmpty || answer.length == 1);
+  answers[row][col] = answer;
+}
+
+bool allCorrect() {
+  print('checking all correct');
+   final anyIncorrect = acrossClues.any((clue) => !clueCorrect(clue)) || downClues.any((clue) => !clueCorrect(clue));
+   print('returning ${!anyIncorrect}');
+   return !anyIncorrect;
+}
+
+bool clueCorrect(Clue clue) {
+  assert(clue.answer!.isNotEmpty);
+  final matching = clue.span.mapIndexed((int i, Index gridPosition) {
+    return (answers[gridPosition.row][gridPosition.column] == clue.answer![i]) ;
+  });
+  
+  return !matching.any((doesMatch) => !doesMatch);
+}
+
+static List<String> _blankClue() => ['','','','','',];
+
+}
+
 class StaticCrosswordState extends State<StaticCrossword> {
   final StreamController<GridUpdate> streamController = new StreamController();
   Clue? currentClueGrid1;
   Clue? currentClueGrid2;
   int currentFocusedGrid = 1;
+  // What's the desired way of initialising these using info from the widget?
+  // these should not be null
+  late GivenAnswers grid1Answers ;
+  late GivenAnswers grid2Answers ;
 
   @override
   void initState() {
     super.initState();
+  grid1Answers = GivenAnswers(widget.acrossClues, widget.downClues);
+  grid2Answers = GivenAnswers(widget.acrossClues, widget.downClues);
     streamController.stream.listen((update) =>
         sendValueUpdate(update, widget.crosswordPath, widget.crosswordId));
   }
@@ -322,6 +367,7 @@ class StaticCrosswordState extends State<StaticCrossword> {
   //     : '${currentClue!.number}: ${currentClue!.surface}');
 
   Widget _buildGridWidget(Grid grid, int gridNumber) {
+    final gridAnswers = gridNumber == 1 ? grid1Answers : grid2Answers;
     final thisGridFocused = gridNumber == currentFocusedGrid;
     final focusUpdate = gridNumber == 1 ? onUpdateGrid1Focus : onUpdateGrid2Focus;
     final currentClue = gridNumber == 1 ? currentClueGrid1 : currentClueGrid2;
@@ -333,7 +379,16 @@ class StaticCrosswordState extends State<StaticCrossword> {
       currentClue: currentClue,
       updateFocus: focusUpdate,
       thisGridFocused: thisGridFocused,
+      onChange: (int row, int col, String answer) => updateAnswer(gridAnswers, row, col, answer),
+      allCorrect: gridAnswers.allCorrect(),
     );
+  }
+
+  void updateAnswer(GivenAnswers answers, int row, int col, String answer) {
+    setState(() {
+      answers.updateAnswer(row, col, answer);
+    });
+
   }
 
   @override

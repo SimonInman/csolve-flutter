@@ -151,8 +151,6 @@ List<Clue> _acrossClueMaker(
 class DoubleCross extends StatelessWidget {
 
 Widget build(BuildContext context) {
-  final clue = Clue(number: 1, surface: 'a clue', length: 5, answer: 'BEAST', position: Index(0,0), 
-  span: [0,1,2,3,4].map((e) => Index(0, e)).toList());
 
   final rows = [
     _topRow,
@@ -170,8 +168,8 @@ return Column(
     Text('One set of clues. Two sets of answers.', ),
     SizedBox.square(dimension: 50.0,),
         StaticCrossword(
-      acrossClues: _acrossClueMaker('Brazillian export', 'clue 1 across', 'Tune', 'clue 2 across', 'Classes', 'clue 3 across'), 
-    downClues: _downClueMaker('First-rate', 'downAnswer1', 'Links site', 'downAnswer2', 'Sax section', 'downAnswer3'), 
+      acrossClues: _acrossClueMaker('Brazillian export', 'SUGAR', 'Tune', 'PIECE', 'Classes', 'RANKS'), 
+    downClues: _downClueMaker('First-rate', 'SUPER', 'Links site', 'GREEN', 'Sax section', 'REEDS'), 
     grid: Grid(width: 5, height: 5, rows: rows), 
     crosswordPath: 'crosswordPath', 
     crosswordId: 'crosswordId'),

@@ -28,6 +28,8 @@ class Cell extends StatefulWidget {
   /// Whether this cell should request focus.
   final bool isFocused;
 
+  final bool puzzleCompleted;
+
   Cell({
     Key? key,
     required this.model,
@@ -35,7 +37,8 @@ class Cell extends StatefulWidget {
     required this.highlight,
     required this.onFocus,
     required this.onAdvanceCursor,
-    required this.isFocused,
+    required this.isFocused, 
+    required this.puzzleCompleted,
   }) : super(key: key);
 
   @override
@@ -116,7 +119,7 @@ class _CellState extends State<Cell> {
       controller: controller,
       onChanged: onUserChange,
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 44, color: Colors.black),
+      style: TextStyle(fontSize: 44, color: widget.puzzleCompleted ? Colors.green : Colors.black),
       onTap: widget.onFocus,
       focusNode: focusNode,
       // Have to add some padding because the TextField doesn't center properly?
