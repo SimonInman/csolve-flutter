@@ -163,12 +163,20 @@ Widget build(BuildContext context) {
 
   ];
 
-return StaticCrossword(
-  acrossClues: _acrossClueMaker('Brazillian export', 'clue 1 across', 'Tune', 'clue 2 across', 'Classes', 'clue 3 across'), 
-downClues: _downClueMaker('First-rate', 'downAnswer1', 'Links site', 'downAnswer2', 'Sax section', 'downAnswer3'), 
-grid: Grid(width: 5, height: 5, rows: rows), 
-crosswordPath: 'crosswordPath', 
-crosswordId: 'crosswordId');
+return Column(
+  mainAxisAlignment: MainAxisAlignment.start,
+  children: [
+    SizedBox.square(dimension: 50.0,),
+    Text('One set of clues. Two sets of answers.', ),
+    SizedBox.square(dimension: 50.0,),
+        StaticCrossword(
+      acrossClues: _acrossClueMaker('Brazillian export', 'clue 1 across', 'Tune', 'clue 2 across', 'Classes', 'clue 3 across'), 
+    downClues: _downClueMaker('First-rate', 'downAnswer1', 'Links site', 'downAnswer2', 'Sax section', 'downAnswer3'), 
+    grid: Grid(width: 5, height: 5, rows: rows), 
+    crosswordPath: 'crosswordPath', 
+    crosswordId: 'crosswordId'),
+  ],
+);
 
   // return Column(children: [
   //   LetterGrid(width: 5, height: 5, rows: rows, streamController: null, 
