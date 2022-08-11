@@ -10,7 +10,7 @@ import '../crossword_model.dart';
 
 // Code that accesses the network.
 
-const SITE_ADDR = 'https://csolve.herokuapp.com/';
+const SITE_ADDR = 'https://csolve.fly.dev/';
 
 Future<Grid> fetchCrossword({
   required String crosswordPath,
