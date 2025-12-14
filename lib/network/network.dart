@@ -12,6 +12,20 @@ import '../crossword_model.dart';
 
 const SITE_ADDR = 'https://csolve.fly.dev/';
 
+Future<List<String>> fetchSources() async {
+  try {
+    final response = await http.get(Uri.parse('${SITE_ADDR}sources'));
+    if (response.statusCode == 200) {
+      final List<dynamic> parsed = json.decode(response.body);
+      return parsed.map((source) => source.toString()).toList();
+    }
+  } catch (e) {
+    debugPrint('Unable to fetch sources: $e');
+  }
+
+  return [];
+}
+
 Future<Grid> fetchCrossword({
   required String crosswordPath,
   required String crosswordId,
