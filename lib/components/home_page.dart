@@ -5,13 +5,18 @@ import 'package:csolve/models/suggestion.dart';
 import 'package:csolve/network/network.dart';
 import 'package:flutter/material.dart';
 
-const SOURCES = [
+const DEFAULT_SOURCES = [
   'guardian-cryptic',
-  'guardian-quiptic',
-  'guardian-prize',
   'guardian-everyman',
+  'guardian-gemolo',
+  'guardian-prize',
+  'guardian-quiptic',
+  'guardian-quick',
+  'guardian-speedy',
+  'guardian-genius',
   'independent',
   'independent-on-sunday',
+  'financial-times',
   'nyt',
   'new-yorker',
   'private-eye',
@@ -23,10 +28,30 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String crosswordPath = 'independent';
+  List<String> crosswordSources = DEFAULT_SOURCES;
+  String crosswordPath = DEFAULT_SOURCES.first;
   String? crosswordId;
   // TODO this isn't actually used yet
   String solveGroup = 'the-everymen';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCrosswordSources();
+  }
+
+  Future<void> _loadCrosswordSources() async {
+    final sources = await fetchSources();
+    if (sources.isNotEmpty) {
+      setState(() {
+        crosswordSources = sources;
+        if (!crosswordSources.contains(crosswordPath)) {
+          crosswordPath = crosswordSources.first;
+          crosswordId = null;
+        }
+      });
+    }
+  }
 
   Future<DropdownButton> buildButton() async {
     final list = await fetchSuggestions(crosswordPath: crosswordPath);
@@ -65,7 +90,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final dropdownItems = SOURCES
+    final dropdownItems = crosswordSources
         .map((value) =>
             new DropdownMenuItem(value: value, child: new Text(value)))
         .toList();
